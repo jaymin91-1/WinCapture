@@ -96,6 +96,33 @@
         </Setter>
     </Style>
 
+    <!-- Capture mode chip (radio): selected = light blue background + blue text. -->
+    <Style x:Key="ModeChipStyle" TargetType="RadioButton">
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border x:Name="Root" CornerRadius="8" Background="Transparent" Padding="14,5">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource HoverBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource SelectedTabBackgroundBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource SelectedTabForegroundBrush}" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- Toggle switch: pill track with a sliding knob; accent blue when on. -->
     <Style x:Key="ToggleSwitchStyle" TargetType="ToggleButton">
         <Setter Property="Width" Value="42" />

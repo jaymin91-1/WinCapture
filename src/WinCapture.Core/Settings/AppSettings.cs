@@ -33,6 +33,9 @@ public sealed record AppSettings
     [JsonPropertyName("capture")]
     public CaptureSettings Capture { get; init; } = new();
 
+    [JsonPropertyName("captureMode")]
+    public CaptureMode CaptureMode { get; init; } = CaptureMode.Screenshot;
+
     [JsonPropertyName("autoHideAppWindow")]
     public bool AutoHideAppWindow { get; init; } = true;
 

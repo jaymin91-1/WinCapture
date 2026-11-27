@@ -19,6 +19,10 @@ public partial class App : Application
     private IHost? _host;
     private TaskbarIcon? _trayIcon;
     private SettingsWindow? _settingsWindow;
+    private ControlBarWindow? _controlBar;
+    // Windows that were visible when "hide windows" ran; restored by the next toggle.
+    private bool _restoreSettingsWindow;
+    private bool _restoreControlBar;
     private HotkeyService? _hotkeys;
 
     protected override void OnStartup(StartupEventArgs e)
@@ -101,6 +105,8 @@ public partial class App : Application
             OnHotkey,
             (title, message) => _trayIcon?.ShowNotification(title, message, H.NotifyIcon.Core.NotificationIcon.Warning));
         _hotkeys.Reapply();
+
+        CreateControlBar(settings.CaptureMode);
         _guard.StartListening(() => Dispatcher.BeginInvoke(ShowSettingsWindow));
     }
 
@@ -109,6 +115,7 @@ public partial class App : Application
         _hotkeys?.Dispose(); // unregisters all hotkeys
         _hotkeys = null;
         _settingsWindow?.AllowClose();
+        _controlBar?.AllowClose();
         _trayIcon?.Dispose();
         _trayIcon = null;
         _host?.StopAsync(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult();
@@ -171,10 +178,9 @@ public partial class App : Application
             MenuActivation = H.NotifyIcon.Core.PopupActivationMode.RightClick,
         };
 
-        // TEMPORARY (change 20261127-03): left click shows the settings window and brings it to the front.
-        // Change 20261127-04 replaces this with showing the control bar.
+        // Left click shows the control bar and brings it to the front (SPEC section 4).
         // TrayLeftMouseUp fires immediately; the library's LeftClickCommand waits for the double-click time.
-        _trayIcon.TrayLeftMouseUp += (_, _) => ShowSettingsWindow();
+        _trayIcon.TrayLeftMouseUp += (_, _) => ShowControlBar();
 
         _trayIcon.ForceCreate();
         WarmUpMenu(menu);
@@ -243,44 +249,114 @@ public partial class App : Application
         }
     }
 
-    // Shared by the ToggleAppWindow hotkey and the tray "show/hide window" item.
-    // Hiding the settings window does not touch the tray icon or the border window.
+    // Single path for "show/hide windows": the [show/hide] button, the ToggleAppWindow hotkey and the tray item.
+    // Hides the settings window and the control bar together and restores the ones that were visible.
+    // The tray icon and the border window are not touched.
     private void ToggleAppWindow()
     {
-        if (_settingsWindow is { IsVisible: true })
+        var settingsVisible = _settingsWindow is { IsVisible: true };
+        var barVisible = _controlBar is { IsVisible: true };
+        if (settingsVisible || barVisible)
         {
-            _settingsWindow.Hide();
+            _restoreSettingsWindow = settingsVisible;
+            _restoreControlBar = barVisible;
+            _settingsWindow?.Hide();
+            _controlBar?.Hide();
+            return;
         }
-        else
+
+        // Nothing visible: bring back what was hidden last time; the control bar is the fallback.
+        if (_restoreSettingsWindow)
         {
             ShowSettingsWindow();
+        }
+
+        if (_restoreControlBar || !_restoreSettingsWindow)
+        {
+            ShowControlBar();
         }
     }
 
     /// <summary>
-    /// Hides the app window when autoHideAppWindow is on and it overlaps the region (F-08-3).
-    /// Screenshot/recording start (sessions 3-4) calls this before capturing. Returns true when hidden.
+    /// Hides the app windows (settings window and control bar) that overlap the region when autoHideAppWindow
+    /// is on (F-08-3). Screenshot/recording start (sessions 3-5) calls this before capturing. Returns true when
+    /// at least one window was hidden.
     /// </summary>
     internal bool HideAppWindowIfOverlapping()
     {
-        if (_settingsWindow is not { IsVisible: true } window || _host is null)
+        if (_host is null)
         {
             return false;
         }
 
-        var bounds = WinCapture.Native.Interop.WindowInterop.GetWindowBounds(
-            new System.Windows.Interop.WindowInteropHelper(window).Handle);
-        var hide = AppWindowPolicy.ShouldAutoHide(
-            _host.Services.GetRequiredService<ISettingsStore>().Load().AutoHideAppWindow,
-            window.IsVisible,
-            bounds,
-            _host.Services.GetRequiredService<RegionState>().Region);
-        if (hide)
+        var autoHide = _host.Services.GetRequiredService<ISettingsStore>().Load().AutoHideAppWindow;
+        var region = _host.Services.GetRequiredService<RegionState>().Region;
+        var hidAny = false;
+        foreach (var window in new Window?[] { _settingsWindow, _controlBar })
         {
-            window.Hide();
+            if (window is not { IsVisible: true })
+            {
+                continue;
+            }
+
+            var bounds = WinCapture.Native.Interop.WindowInterop.GetWindowBounds(
+                new System.Windows.Interop.WindowInteropHelper(window).Handle);
+            if (AppWindowPolicy.ShouldAutoHide(autoHide, window.IsVisible, bounds, region))
+            {
+                window.Hide();
+                hidAny = true;
+            }
         }
 
-        return hide;
+        return hidAny;
+    }
+
+    private void CreateControlBar(CaptureMode initialMode)
+    {
+        _controlBar = new ControlBarWindow(initialMode);
+        _controlBar.SelectRegionRequested += (_, _) => OnHotkey(HotkeyAction.SelectRegion);
+        // Same path as the hotkey / tray item for the mode; not enabled until the mode is implemented.
+        _controlBar.CaptureRequested += (_, mode) => OnHotkey(CaptureAvailability.ActionFor(mode));
+        _controlBar.SettingsRequested += (_, _) => ShowSettingsWindow();
+        _controlBar.ToggleWindowsRequested += (_, _) => OnHotkey(HotkeyAction.ToggleAppWindow);
+        _controlBar.ModeChanged += (_, mode) => SaveCaptureMode(mode);
+        ShowControlBar();
+    }
+
+    private void SaveCaptureMode(CaptureMode mode)
+    {
+        try
+        {
+            var store = _host!.Services.GetRequiredService<ISettingsStore>();
+            store.Save(store.Load() with { CaptureMode = mode });
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Saving captureMode failed");
+        }
+    }
+
+    // Single path for showing the control bar (startup, tray left click, window toggle).
+    private void ShowControlBar()
+    {
+        if (_controlBar is null)
+        {
+            return;
+        }
+
+        if (!_controlBar.IsVisible)
+        {
+            _controlBar.Show();
+        }
+
+        if (_controlBar.WindowState == WindowState.Minimized)
+        {
+            _controlBar.WindowState = WindowState.Normal;
+        }
+
+        _controlBar.Topmost = true;
+        _controlBar.Topmost = false;
+        _controlBar.Activate();
     }
 
     // Single path for showing the settings window (tray menu and second-instance signal).
@@ -308,6 +384,7 @@ public partial class App : Application
     private void ExitApplication()
     {
         _settingsWindow?.AllowClose();
+        _controlBar?.AllowClose();
         _trayIcon?.Dispose();
         _trayIcon = null;
         Shutdown();

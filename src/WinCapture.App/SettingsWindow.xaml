@@ -5,6 +5,7 @@
                  xmlns:pages="clr-namespace:WinCapture.App.Pages"
                  xmlns:controls="clr-namespace:WinCapture.App.Controls"
                  Title="WinCapture 설정" Height="520" Width="860"
+                 Icon="pack://application:,,,/Assets/AppIcon.ico"
                  MinHeight="400" MinWidth="640"
                  WindowStartupLocation="CenterScreen"
                  WindowBackdropType="None"
@@ -19,7 +20,11 @@
 
         <ui:TitleBar x:Name="TitleBar" Grid.Row="0" Title="WinCapture 설정"
                      Background="{DynamicResource TitleBarBrush}"
-                     Foreground="{DynamicResource TextPrimaryBrush}" />
+                     Foreground="{DynamicResource TextPrimaryBrush}">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="pack://application:,,,/Assets/AppIcon.ico" />
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
 
         <ui:NavigationView x:Name="RootNavigation" Grid.Row="1"
                            IsBackButtonVisible="Collapsed"
