@@ -13,6 +13,7 @@
 - 주요 결정: 재실행 신호는 이름 있는 EventWaitHandle, saveFolder는 %USERPROFILE% 문자열 저장 후 사용 시 확장, 트레이 토글 항목은 "/" 표기
 
 ## 세션 2 (상태: 진행 중)
+- task-01 통과 (반려 0회): Core 단축키 모델(파싱·직렬화·충돌 검사), CI actions checkout v7 / setup-dotnet v6 (Node 20 경고 해소)
 - 주요 결정: ClearRegion은 저장된 lastRegion도 비운다 (사용자 결정 A, 2026-11-27)
 
 ## 수정 이력
