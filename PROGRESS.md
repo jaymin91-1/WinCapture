@@ -17,6 +17,7 @@
 - task-02 통과 (반려 0회): Core Rect·DPI 변환·드래그 정규화·테두리 사각형·lastRegion 복원과 가상 화면 보정(최소 이동/초과 시 축소)
 - task-03 통과 (반려 0회): Core 히트 테스트(그립 우선)·이동/리사이즈 제한·녹화 중 잠금·창-영역 겹침·툴팁 형식
 - task-04 통과 (반려 0회): Native LibraryImport 래퍼, OverlayWindowBase(캡처 제외·창 스타일 단일 지점), BorderWindow(영역 바깥 테두리·그립, 내부 HTTRANSPARENT)
+- task-05 통과 (반려 0회): SelectionOverlayWindow(딤·크기 라벨·Esc 취소), RegionCoordinator(선택 적용·복원·ClearRegion), 트레이 '영역 지정' 연결. 선택 오버레이만 NOACTIVATE 예외(allowActivation, 캡처 제외 유지)
 - 주요 결정: ClearRegion은 저장된 lastRegion도 비운다 (사용자 결정 A, 2026-11-27)
 
 ## 수정 이력
