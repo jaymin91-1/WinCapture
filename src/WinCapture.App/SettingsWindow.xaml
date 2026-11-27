@@ -3,6 +3,7 @@
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                  xmlns:pages="clr-namespace:WinCapture.App.Pages"
+                 xmlns:controls="clr-namespace:WinCapture.App.Controls"
                  Title="WinCapture 설정" Height="520" Width="860"
                  MinHeight="400" MinWidth="640"
                  WindowStartupLocation="CenterScreen"
@@ -35,32 +36,32 @@
             <ui:NavigationView.MenuItems>
                 <ui:NavigationViewItem Content="일반" TargetPageType="{x:Type pages:GeneralPage}">
                     <ui:NavigationViewItem.Icon>
-                        <Viewbox Width="18" Height="18"><Path Style="{StaticResource NavIconPathStyle}" Data="{StaticResource Icon.General}" /></Viewbox>
+                        <controls:PathIcon Width="18" Height="18" Data="{StaticResource Icon.General}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem Content="단축키" TargetPageType="{x:Type pages:HotkeysPage}">
                     <ui:NavigationViewItem.Icon>
-                        <Viewbox Width="18" Height="18"><Path Style="{StaticResource NavIconPathStyle}" Data="{StaticResource Icon.Hotkeys}" /></Viewbox>
+                        <controls:PathIcon Width="18" Height="18" Data="{StaticResource Icon.Hotkeys}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem Content="캡처" TargetPageType="{x:Type pages:CapturePage}">
                     <ui:NavigationViewItem.Icon>
-                        <Viewbox Width="18" Height="18"><Path Style="{StaticResource NavIconPathStyle}" Data="{StaticResource Icon.Capture}" /></Viewbox>
+                        <controls:PathIcon Width="18" Height="18" Data="{StaticResource Icon.Capture}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem Content="녹화" TargetPageType="{x:Type pages:RecordingPage}">
                     <ui:NavigationViewItem.Icon>
-                        <Viewbox Width="18" Height="18"><Path Style="{StaticResource NavIconPathStyle}" Data="{StaticResource Icon.Recording}" /></Viewbox>
+                        <controls:PathIcon Width="18" Height="18" Data="{StaticResource Icon.Recording}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem Content="FFmpeg" TargetPageType="{x:Type pages:FfmpegPage}">
                     <ui:NavigationViewItem.Icon>
-                        <Viewbox Width="18" Height="18"><Path Style="{StaticResource NavIconPathStyle}" Data="{StaticResource Icon.Ffmpeg}" /></Viewbox>
+                        <controls:PathIcon Width="18" Height="18" Data="{StaticResource Icon.Ffmpeg}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem Content="정보" TargetPageType="{x:Type pages:AboutPage}">
                     <ui:NavigationViewItem.Icon>
-                        <Viewbox Width="18" Height="18"><Path Style="{StaticResource NavIconPathStyle}" Data="{StaticResource Icon.About}" /></Viewbox>
+                        <controls:PathIcon Width="18" Height="18" Data="{StaticResource Icon.About}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>

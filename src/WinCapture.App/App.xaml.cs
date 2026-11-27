@@ -166,10 +166,42 @@ public partial class App : Application
             ToolTipText = "WinCapture",
             IconSource = (ImageSource)FindResource("TrayIconImage"),
             ContextMenu = menu,
-            MenuActivation = H.NotifyIcon.Core.PopupActivationMode.LeftOrRightClick,
+            // Right click only: LeftOrRightClick made H.NotifyIcon defer the left-click menu by the system
+            // double-click time and opened the menu on left click, which SPEC section 4 no longer wants.
+            MenuActivation = H.NotifyIcon.Core.PopupActivationMode.RightClick,
         };
+
+        // TEMPORARY (change 20261127-03): left click shows the settings window and brings it to the front.
+        // Change 20261127-04 replaces this with showing the control bar.
+        // TrayLeftMouseUp fires immediately; the library's LeftClickCommand waits for the double-click time.
+        _trayIcon.TrayLeftMouseUp += (_, _) => ShowSettingsWindow();
+
         _trayIcon.ForceCreate();
+        WarmUpMenu(menu);
     }
+
+    // The first IsOpen of a ContextMenu builds its template and popup; do the template work up front, while idle,
+    // so the first right click does not pay for it. Does not open the popup (no flicker, no focus change).
+    private void WarmUpMenu(ContextMenu menu) =>
+        Dispatcher.BeginInvoke(
+            System.Windows.Threading.DispatcherPriority.ApplicationIdle,
+            () =>
+            {
+                try
+                {
+                    menu.ApplyTemplate();
+                    foreach (var item in menu.Items.OfType<Control>())
+                    {
+                        item.ApplyTemplate();
+                    }
+
+                    menu.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, "Tray menu warm-up failed");
+                }
+            });
 
     private MenuItem CreateMenuItem(string header, string? shortcut, bool enabled) => new()
     {
