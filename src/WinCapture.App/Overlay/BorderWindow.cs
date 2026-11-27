@@ -27,6 +27,7 @@ public sealed class BorderWindow : OverlayWindowBase
     private readonly RegionCoordinator? _coordinator;
     private readonly DragTooltipWindow _tooltip = new();
     private RegionDrag? _drag;
+    private WinCapture.Core.Geometry.Rect _dragStartRegion;
 
     public BorderWindow(RegionCoordinator? coordinator = null)
     {
@@ -126,6 +127,7 @@ public sealed class BorderWindow : OverlayWindowBase
         }
 
         _drag = new RegionDrag(hit, _region, cursor);
+        _dragStartRegion = _region;
         CaptureMouse();
         if (_coordinator.State.IsLocked)
         {
@@ -161,7 +163,8 @@ public sealed class BorderWindow : OverlayWindowBase
         _drag = null;
         ReleaseMouseCapture();
         _tooltip.Hide();
-        if (persist && _coordinator?.State.Region is { } final)
+        // Skip saving when the drag did not change the region.
+        if (persist && _coordinator?.State.Region is { } final && final != _dragStartRegion)
         {
             _coordinator.UpdateRegion(final, persist: true); // save lastRegion once, at the end
         }

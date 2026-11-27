@@ -39,4 +39,16 @@ public static class WindowInterop
         NativeMethods.GetSystemMetrics(NativeMethods.SM_CYVIRTUALSCREEN));
 
     public static uint GetDpi(IntPtr hwnd) => NativeMethods.GetDpiForWindow(hwnd);
+
+    /// <summary>Registers a global hotkey (RegisterHotKey only, no keyboard hook). Returns the Win32 error code, 0 on success.</summary>
+    public static int RegisterHotkey(IntPtr hwnd, int id, uint modifiers, uint virtualKey) =>
+        NativeMethods.RegisterHotKey(hwnd, id, modifiers | NativeMethods.MOD_NOREPEAT, virtualKey)
+            ? 0
+            : System.Runtime.InteropServices.Marshal.GetLastPInvokeError();
+
+    public static void UnregisterHotkey(IntPtr hwnd, int id) => NativeMethods.UnregisterHotKey(hwnd, id);
+
+    /// <summary>Window bounds in virtual screen physical pixels, or null on failure.</summary>
+    public static Rect? GetWindowBounds(IntPtr hwnd) =>
+        NativeMethods.GetWindowRect(hwnd, out var r) ? new Rect(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top) : null;
 }

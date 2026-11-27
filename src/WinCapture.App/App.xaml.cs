@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using WinCapture.App.Overlay;
 using WinCapture.Core.Geometry;
+using WinCapture.Core.Hotkeys;
 using WinCapture.Core.Settings;
 
 namespace WinCapture.App;
@@ -18,6 +19,7 @@ public partial class App : Application
     private IHost? _host;
     private TaskbarIcon? _trayIcon;
     private SettingsWindow? _settingsWindow;
+    private HotkeyService? _hotkeys;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -93,11 +95,19 @@ public partial class App : Application
 
         AppTheme.Initialize();
         CreateTrayIcon();
+
+        _hotkeys = new HotkeyService(
+            _host.Services.GetRequiredService<ISettingsStore>(),
+            OnHotkey,
+            (title, message) => _trayIcon?.ShowNotification(title, message, H.NotifyIcon.Core.NotificationIcon.Warning));
+        _hotkeys.Reapply();
         _guard.StartListening(() => Dispatcher.BeginInvoke(ShowSettingsWindow));
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
+        _hotkeys?.Dispose(); // unregisters all hotkeys
+        _hotkeys = null;
         _settingsWindow?.AllowClose();
         _trayIcon?.Dispose();
         _trayIcon = null;
@@ -131,13 +141,15 @@ public partial class App : Application
         // Order follows SPEC section 4; shortcut text shows SPEC section 7 defaults.
         // Unimplemented items are disabled placeholders.
         var selectItem = CreateMenuItem("영역 지정", "Ctrl+Alt+R", enabled: true);
-        selectItem.Click += (_, _) => _host?.Services.GetRequiredService<SelectionController>().BeginSelection();
+        selectItem.Click += (_, _) => OnHotkey(HotkeyAction.SelectRegion);
         menu.Items.Add(selectItem);
         menu.Items.Add(CreateMenuItem("스크린샷", "Ctrl+Alt+S", enabled: false));
         menu.Items.Add(CreateMenuItem("동영상 녹화 시작/정지", "Ctrl+Alt+V", enabled: false));
         menu.Items.Add(CreateMenuItem("GIF 녹화 시작/정지", "Ctrl+Alt+G", enabled: false));
         menu.Items.Add(CreateSeparator());
-        menu.Items.Add(CreateMenuItem("창 표시/숨김", "Ctrl+Alt+W", enabled: false));
+        var toggleWindowItem = CreateMenuItem("창 표시/숨김", "Ctrl+Alt+W", enabled: true);
+        toggleWindowItem.Click += (_, _) => OnHotkey(HotkeyAction.ToggleAppWindow);
+        menu.Items.Add(toggleWindowItem);
         menu.Items.Add(CreateMenuItem("저장 폴더 열기", null, enabled: false));
         menu.Items.Add(CreateSeparator());
 
@@ -168,6 +180,76 @@ public partial class App : Application
     };
 
     private Separator CreateSeparator() => new() { Style = (Style)FindResource("TrayMenuSeparatorStyle") };
+
+    // Single dispatch for hotkeys and the matching tray menu items.
+    private void OnHotkey(HotkeyAction action)
+    {
+        var services = _host?.Services;
+        if (services is null)
+        {
+            return;
+        }
+
+        switch (action)
+        {
+            case HotkeyAction.SelectRegion:
+                services.GetRequiredService<SelectionController>().BeginSelection();
+                break;
+            case HotkeyAction.ToggleBorder:
+                services.GetRequiredService<RegionState>().ToggleBorder();
+                break;
+            case HotkeyAction.ClearRegion:
+                services.GetRequiredService<RegionCoordinator>().Clear(); // also empties saved lastRegion
+                break;
+            case HotkeyAction.ToggleAppWindow:
+                ToggleAppWindow();
+                break;
+            default:
+                // Screenshot / RecordVideo / RecordGif: registered only; implemented in later sessions.
+                Log.Information("Hotkey {Action} pressed (not implemented yet)", action);
+                break;
+        }
+    }
+
+    // Shared by the ToggleAppWindow hotkey and the tray "show/hide window" item.
+    // Hiding the settings window does not touch the tray icon or the border window.
+    private void ToggleAppWindow()
+    {
+        if (_settingsWindow is { IsVisible: true })
+        {
+            _settingsWindow.Hide();
+        }
+        else
+        {
+            ShowSettingsWindow();
+        }
+    }
+
+    /// <summary>
+    /// Hides the app window when autoHideAppWindow is on and it overlaps the region (F-08-3).
+    /// Screenshot/recording start (sessions 3-4) calls this before capturing. Returns true when hidden.
+    /// </summary>
+    internal bool HideAppWindowIfOverlapping()
+    {
+        if (_settingsWindow is not { IsVisible: true } window || _host is null)
+        {
+            return false;
+        }
+
+        var bounds = WinCapture.Native.Interop.WindowInterop.GetWindowBounds(
+            new System.Windows.Interop.WindowInteropHelper(window).Handle);
+        var hide = AppWindowPolicy.ShouldAutoHide(
+            _host.Services.GetRequiredService<ISettingsStore>().Load().AutoHideAppWindow,
+            window.IsVisible,
+            bounds,
+            _host.Services.GetRequiredService<RegionState>().Region);
+        if (hide)
+        {
+            window.Hide();
+        }
+
+        return hide;
+    }
 
     // Single path for showing the settings window (tray menu and second-instance signal).
     private void ShowSettingsWindow()
