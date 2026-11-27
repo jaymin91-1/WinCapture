@@ -12,11 +12,20 @@
                  WindowBackdropType="None"
                  Background="{DynamicResource WindowBackgroundBrush}"
                  ExtendsContentIntoTitleBar="True">
-    <!-- Size: SizeToContent=WidthAndHeight follows this single root container. Its only fixed value is the 320 DIP width
-         (design width of the mockup); height is the sum of the rows. Every outer margin is 12 DIP.
+    <ui:FluentWindow.Resources>
+        <!-- The ONLY place the outer margin is defined: 8 DIP on every side of the visible window.
+             WindowInset = body margin (all four sides); WindowInsetX = the same 8 DIP, left/right only, for the
+             full-width menu bar strip so its items sit in the same column as the body. -->
+        <Thickness x:Key="WindowInset">8</Thickness>
+        <Thickness x:Key="WindowInsetX">8,0,8,0</Thickness>
+    </ui:FluentWindow.Resources>
+    <!-- Size: SizeToContent=WidthAndHeight follows this root Grid. No Width/MinWidth on the window or the root.
+         The visible width = body column + 2 x 8 DIP. The body column is as wide as the [Capture] button
+         (MinWidth below + a hidden sizer holding the longest label); every other row stretches to that column.
+         The status card is wrapped in WidthIgnoringDecorator so changing coordinates never change the width.
          Resize/maximize lock: ResizeMode=CanMinimize (keeps the minimize button), TitleBar CanMaximize=False and the
          FixedSizeWindow helper (code-behind), see FixedSizeWindow.cs. -->
-    <Grid Width="320">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -35,7 +44,7 @@
 
         <!-- Row 1: menu bar [Settings] [Hotkeys] [Hide window] -->
         <Border Grid.Row="1" Background="{DynamicResource TitleBarBrush}"
-                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="12,0,12,6">
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="{StaticResource WindowInsetX}">
             <StackPanel x:Name="MenuBar" Orientation="Horizontal">
                 <Button x:Name="MenuSettingsButton" Content="설정" Style="{StaticResource MenuBarItemStyle}" Click="OnSettingsClick" />
                 <Button x:Name="MenuHotkeysButton" Content="단축키" Style="{StaticResource MenuBarItemStyle}" Click="OnHotkeysClick" />
@@ -43,8 +52,9 @@
             </StackPanel>
         </Border>
 
-        <StackPanel Grid.Row="2" Margin="12">
+        <StackPanel Grid.Row="2" Margin="{StaticResource WindowInset}">
             <!-- Status card: region state + coordinates, border chip on the right -->
+            <controls:WidthIgnoringDecorator>
             <Border x:Name="StatusCard" Style="{StaticResource CardStyle}" Padding="14,10">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -67,6 +77,7 @@
                     </Border>
                 </Grid>
             </Border>
+            </controls:WidthIgnoringDecorator>
 
             <!-- Mode selector: segmented control, single selection -->
             <Border Margin="0,12,0,0" CornerRadius="12" Padding="3" Background="{DynamicResource BorderBrush}">
@@ -90,13 +101,19 @@
 
             <!-- Big accent [Capture] button -->
             <Button x:Name="CaptureButton" Style="{StaticResource PrimaryButtonStyle}" Margin="0,12,0,0"
-                    ToolTipService.ShowOnDisabled="True" Click="OnCaptureClick">
-                <StackPanel Orientation="Horizontal">
+                    MinWidth="296" ToolTipService.ShowOnDisabled="True" Click="OnCaptureClick">
+                <Grid>
+                    <!-- Hidden sizer: holds every capture label (filled in code from ControlBarText) so the button
+                         is always as wide as the longest label and does not change width when the mode changes.
+                         Left margin 26 = icon 18 + gap 8. -->
+                    <Grid x:Name="CaptureLabelSizer" Visibility="Hidden" Margin="26,0,0,0" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <controls:PathIcon Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center"
                                        Data="{StaticResource Icon.Capture}"
                                        Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                     <TextBlock x:Name="CaptureButtonText" VerticalAlignment="Center" />
                 </StackPanel>
+                </Grid>
             </Button>
         </StackPanel>
     </Grid>

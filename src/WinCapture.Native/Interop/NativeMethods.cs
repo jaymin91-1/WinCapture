@@ -158,4 +158,36 @@ public static partial class NativeMethods
     [LibraryImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool DeleteMenu(IntPtr menu, uint position, uint flags);
+
+    // Outermost window-procedure subclass (sees the final WM_NCHITTEST result of every WPF / WPF-UI hook).
+    public const int WM_SETCURSOR = 0x0020;
+    public const int WM_NCDESTROY = 0x0082;
+    public const uint SWP_NOMOVE = 0x0002;
+    public const uint SWP_NOZORDER = 0x0004;
+    public const uint SWP_FRAMECHANGED = 0x0020;
+    public const int IDC_ARROW = 32512;
+    public const int DWMWA_EXTENDED_FRAME_BOUNDS = 9;
+
+    [UnmanagedFunctionPointer(CallingConvention.Winapi)]
+    public delegate IntPtr SubclassProc(IntPtr hwnd, uint msg, IntPtr wParam, IntPtr lParam, UIntPtr subclassId, UIntPtr refData);
+
+    [LibraryImport("comctl32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool SetWindowSubclass(IntPtr hwnd, IntPtr subclassProc, UIntPtr subclassId, UIntPtr refData);
+
+    [LibraryImport("comctl32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool RemoveWindowSubclass(IntPtr hwnd, IntPtr subclassProc, UIntPtr subclassId);
+
+    [LibraryImport("comctl32.dll")]
+    public static partial IntPtr DefSubclassProc(IntPtr hwnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+    [LibraryImport("user32.dll", EntryPoint = "LoadCursorW", SetLastError = true)]
+    public static partial IntPtr LoadCursor(IntPtr instance, IntPtr cursorName);
+
+    [LibraryImport("user32.dll")]
+    public static partial IntPtr SetCursor(IntPtr cursor);
+
+    [LibraryImport("dwmapi.dll")]
+    public static partial int DwmGetWindowAttribute(IntPtr hwnd, int attribute, out RECT value, int size);
 }

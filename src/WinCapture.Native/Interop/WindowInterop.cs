@@ -60,8 +60,23 @@ public static class WindowInterop
         if (wanted != current)
         {
             NativeMethods.SetWindowLongPtr(hwnd, NativeMethods.GWL_STYLE, (nint)wanted);
+            // Without SWP_FRAMECHANGED the non-client area keeps the old (sizing) frame until the next resize.
+            NativeMethods.SetWindowPos(
+                hwnd, IntPtr.Zero, 0, 0, 0, 0,
+                NativeMethods.SWP_NOMOVE | NativeMethods.SWP_NOSIZE | NativeMethods.SWP_NOZORDER
+                | NativeMethods.SWP_NOACTIVATE | NativeMethods.SWP_FRAMECHANGED);
         }
     }
+
+    /// <summary>
+    /// Visible window bounds from DWM (DWMWA_EXTENDED_FRAME_BOUNDS, physical pixels), or null on failure.
+    /// Differs from <see cref="GetWindowBounds"/> when the window rectangle includes an invisible frame.
+    /// </summary>
+    public static Rect? GetVisibleBounds(IntPtr hwnd) =>
+        NativeMethods.DwmGetWindowAttribute(
+            hwnd, NativeMethods.DWMWA_EXTENDED_FRAME_BOUNDS, out var r, System.Runtime.InteropServices.Marshal.SizeOf<NativeMethods.RECT>()) == 0
+            ? new Rect(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top)
+            : null;
 
     /// <summary>Deletes Size and Maximize from the system menu (Alt+Space, title bar right click).</summary>
     public static void RemoveSizeMenuItems(IntPtr hwnd)

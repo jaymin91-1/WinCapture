@@ -37,6 +37,7 @@ public partial class ControlBarWindow : FluentWindow
             _ => ScreenshotModeButton,
         }).IsChecked = true;
         _initializing = false;
+        FillCaptureLabelSizer();
         RefreshCaptureButton();
 
         // The status card follows the region state; the subscription ends when the window is really closed
@@ -128,6 +129,23 @@ public partial class ControlBarWindow : FluentWindow
         }
 
         StatusCoordinatesText.Text = ControlBarText.Coordinates(mode, rect, monitorNumber);
+    }
+
+    // Every capture label (all modes, recording or not) is laid out invisibly in one cell, so the button width is
+    // decided by the longest label and stays constant when the mode or the recording state changes.
+    private void FillCaptureLabelSizer()
+    {
+        foreach (var mode in Enum.GetValues<CaptureMode>())
+        {
+            foreach (var recording in new[] { false, true })
+            {
+                CaptureLabelSizer.Children.Add(new System.Windows.Controls.TextBlock
+                {
+                    Text = ControlBarText.CaptureButtonText(mode, recording),
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                });
+            }
+        }
     }
 
     // [Capture] is enabled only for modes that CaptureAvailability reports as implemented.

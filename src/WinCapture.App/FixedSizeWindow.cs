@@ -29,6 +29,8 @@ internal static class FixedSizeWindow
     {
         HwndSourceHook? hook = null;
         HwndSource? source = null;
+        SizingHitGuard? guard = null;
+        var diagnosticsLogged = false;
 
         void Apply()
         {
@@ -46,6 +48,9 @@ internal static class FixedSizeWindow
                     chrome.ResizeBorderThickness = new Thickness(0);
                 }
 
+                // Layer 8: installed once, as early as the handle exists.
+                guard ??= SizingHitGuard.Install(hwnd);
+
                 // Layers 2 and 4.
                 WindowInterop.RemoveSizingStyles(hwnd);
                 WindowInterop.RemoveSizeMenuItems(hwnd);
@@ -62,6 +67,12 @@ internal static class FixedSizeWindow
                 source?.RemoveHook(hook);
                 newSource.AddHook(hook);
                 source = newSource;
+
+                if (!diagnosticsLogged && window.IsLoaded)
+                {
+                    diagnosticsLogged = true;
+                    LogBounds(window, hwnd);
+                }
             }
             catch (Exception ex)
             {
@@ -72,6 +83,8 @@ internal static class FixedSizeWindow
         window.SourceInitialized += (_, _) => Apply();
         window.ContentRendered += (_, _) => Apply();
 
+        window.Closed += (_, _) => guard?.Dispose();
+
         // Layer 7.
         window.StateChanged += (_, _) =>
         {
@@ -80,6 +93,18 @@ internal static class FixedSizeWindow
                 window.WindowState = WindowState.Normal;
             }
         };
+    }
+
+    // Diagnostics for "is the window wider than its content?": GetWindowRect includes any invisible frame,
+    // DWMWA_EXTENDED_FRAME_BOUNDS is what the user sees. Logged once per window (see %LocalAppData%\WinCapture\logs).
+    private static void LogBounds(Window window, IntPtr hwnd)
+    {
+        var dpi = WindowInterop.GetDpi(hwnd);
+        var outer = WindowInterop.GetWindowBounds(hwnd);
+        var visible = WindowInterop.GetVisibleBounds(hwnd);
+        Log.Information(
+            "{Window} bounds: GetWindowRect={Outer} DwmExtendedFrame={Visible} Actual={W}x{H} DIP dpi={Dpi}",
+            window.GetType().Name, outer, visible, window.ActualWidth, window.ActualHeight, dpi);
     }
 
     private static IntPtr WndProc(Window window, IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
