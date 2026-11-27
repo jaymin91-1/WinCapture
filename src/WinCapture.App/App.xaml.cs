@@ -75,6 +75,7 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        _settingsWindow?.AllowClose();
         _trayIcon?.Dispose();
         _trayIcon = null;
         _host?.StopAsync(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult();
@@ -130,13 +131,11 @@ public partial class App : Application
         _trayIcon.ForceCreate();
     }
 
+    // Single path for showing the settings window (tray menu and second-instance signal).
     private void ShowSettingsWindow()
     {
-        if (_settingsWindow is null)
-        {
-            _settingsWindow = new SettingsWindow();
-            _settingsWindow.Closed += (_, _) => _settingsWindow = null;
-        }
+        // The window is created once and hidden (not closed) when the user clicks X.
+        _settingsWindow ??= new SettingsWindow();
 
         if (!_settingsWindow.IsVisible)
         {
@@ -156,6 +155,7 @@ public partial class App : Application
 
     private void ExitApplication()
     {
+        _settingsWindow?.AllowClose();
         _trayIcon?.Dispose();
         _trayIcon = null;
         Shutdown();
