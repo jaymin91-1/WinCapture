@@ -34,7 +34,7 @@ public static class CaptureFileNamer
         string baseName;
         if (resolved.Contains(CounterToken, StringComparison.Ordinal))
         {
-            var counter = NextCounter(resolved, type, fileSystem.GetFileNames(folder));
+            var counter = NextCounter(pattern, type, fileSystem.GetFileNames(folder));
             baseName = Sanitize(resolved.Replace(CounterToken, counter.ToString("D4", CultureInfo.InvariantCulture), StringComparison.Ordinal));
         }
         else
@@ -64,20 +64,66 @@ public static class CaptureFileNamer
     }
 
     /// <summary>
-    /// Largest number among existing files matching the pattern (other tokens resolved to the same values), plus one.
-    /// Returns 1 when none match. A trailing _N duplicate suffix is tolerated.
+    /// Largest number among existing files matching the pattern, plus one; 1 when none match.
+    /// {date}, {time}, {w}, {h} match any value; {type} and literal text must match. A trailing _N duplicate suffix is tolerated.
     /// </summary>
-    public static int NextCounter(string resolvedPattern, string type, IEnumerable<string> existingFileNames)
+    public static int NextCounter(string pattern, string type, IEnumerable<string> existingFileNames)
     {
-        var parts = resolvedPattern.Split(CounterToken);
         var regex = new StringBuilder("^");
-        regex.Append(Regex.Escape(Sanitize(parts[0])));
-        for (var i = 1; i < parts.Length; i++)
+        var counterSeen = false;
+        var i = 0;
+        var literal = new StringBuilder();
+
+        void FlushLiteral()
         {
-            regex.Append(i == 1 ? "(\\d+)" : "\\d+");
-            regex.Append(Regex.Escape(Sanitize(parts[i])));
+            if (literal.Length > 0)
+            {
+                regex.Append(Regex.Escape(Sanitize(literal.ToString())));
+                literal.Clear();
+            }
         }
 
+        while (i < pattern.Length)
+        {
+            string? replacement = null;
+            var tokenLength = 0;
+            foreach (var (token, rx) in WildcardTokens)
+            {
+                if (string.CompareOrdinal(pattern, i, token, 0, token.Length) == 0)
+                {
+                    replacement = rx;
+                    tokenLength = token.Length;
+                    break;
+                }
+            }
+
+            if (replacement is null && string.CompareOrdinal(pattern, i, CounterToken, 0, CounterToken.Length) == 0)
+            {
+                replacement = counterSeen ? "\\d+" : "(\\d+)";
+                counterSeen = true;
+                tokenLength = CounterToken.Length;
+            }
+
+            if (replacement is null && string.CompareOrdinal(pattern, i, "{type}", 0, 6) == 0)
+            {
+                literal.Append(type);
+                i += 6;
+                continue;
+            }
+
+            if (replacement is null)
+            {
+                literal.Append(pattern[i]);
+                i++;
+                continue;
+            }
+
+            FlushLiteral();
+            regex.Append(replacement);
+            i += tokenLength;
+        }
+
+        FlushLiteral();
         regex.Append("(?:_\\d+)?\\.").Append(Regex.Escape(type)).Append('$');
         var re = new Regex(regex.ToString(), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
@@ -85,7 +131,7 @@ public static class CaptureFileNamer
         foreach (var name in existingFileNames)
         {
             var m = re.Match(name);
-            if (m.Success && int.TryParse(m.Groups[1].Value, NumberStyles.None, CultureInfo.InvariantCulture, out var n) && n > max)
+            if (m.Success && m.Groups.Count > 1 && int.TryParse(m.Groups[1].Value, NumberStyles.None, CultureInfo.InvariantCulture, out var n) && n > max)
             {
                 max = n;
             }
@@ -93,6 +139,14 @@ public static class CaptureFileNamer
 
         return max + 1;
     }
+
+    private static readonly (string Token, string Regex)[] WildcardTokens =
+    {
+        ("{date}", "\\d{8}"),
+        ("{time}", "\\d{6}"),
+        ("{w}", "\\d+"),
+        ("{h}", "\\d+"),
+    };
 
     private static string ResolveTokens(string pattern, DateTime now, int width, int height, string type) =>
         pattern

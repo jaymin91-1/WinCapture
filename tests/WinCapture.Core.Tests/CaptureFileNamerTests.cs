@@ -101,11 +101,20 @@ public sealed class CaptureFileNamerTests
     }
 
     [Fact]
-    public void Counter_WithOtherTokens_ResolvesThemFirst()
+    public void Counter_OtherTokensMatchAnyValue()
     {
         var fs = new FakeFs();
-        fs.Files.Add("C:\\Shots\\20261127_0004_400x300.png");
-        fs.Files.Add("C:\\Shots\\20261126_0009_400x300.png");
-        Build("{date}_{counter}_{w}x{h}", fs).Should().Be("C:\\Shots\\20261127_0005_400x300.png");
+        fs.Files.Add("C:\\Shots\\WinCapture_20261126_081500_0003.png");
+        fs.Files.Add("C:\\Shots\\WinCapture_20261125_081500_0002.png");
+        Build("WinCapture_{date}_{time}_{counter}", fs).Should().Be("C:\\Shots\\WinCapture_20261127_093005_0004.png");
+    }
+
+    [Fact]
+    public void Counter_SizeTokensMatchAnyValue_TypeMustMatch()
+    {
+        var fs = new FakeFs();
+        fs.Files.Add("C:\\Shots\\0004_800x600.png");
+        fs.Files.Add("C:\\Shots\\0009_800x600.gif");
+        Build("{counter}_{w}x{h}", fs).Should().Be("C:\\Shots\\0005_400x300.png");
     }
 }
