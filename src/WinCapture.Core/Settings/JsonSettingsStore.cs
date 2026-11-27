@@ -89,7 +89,6 @@ public sealed class JsonSettingsStore : ISettingsStore
         SaveFolder = s.SaveFolder ?? new AppSettings().SaveFolder,
         FileNamePattern = s.FileNamePattern ?? new AppSettings().FileNamePattern,
         FfmpegPath = s.FfmpegPath ?? "",
-        LastRegion = s.LastRegion ?? new RegionSettings(),
         Hotkeys = s.Hotkeys ?? new HotkeySettings(),
         Border = s.Border ?? new BorderSettings(),
         Capture = s.Capture ?? new CaptureSettings(),

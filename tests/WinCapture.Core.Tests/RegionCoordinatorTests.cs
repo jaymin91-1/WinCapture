@@ -1,153 +1,131 @@
 using FluentAssertions;
 using WinCapture.Core.Geometry;
-using WinCapture.Core.Settings;
 
 namespace WinCapture.Core.Tests;
 
 public sealed class RegionCoordinatorTests
 {
-    private sealed class MemoryStore : ISettingsStore
+    internal sealed class FakeScreen : IScreenInfo
     {
-        public AppSettings Current { get; set; } = new();
-        public int Saves { get; private set; }
-        public bool ThrowOnSave { get; set; }
-
-        public AppSettings Load() => Current;
-
-        public void Save(AppSettings settings)
-        {
-            if (ThrowOnSave)
-            {
-                throw new IOException("disk full");
-            }
-
-            Saves++;
-            Current = settings;
-        }
+        public List<Rect> Monitors { get; set; } = [new Rect(0, 0, 1920, 1080), new Rect(1920, 0, 2560, 1440)];
+        public Rect? Primary { get; set; } = new Rect(0, 0, 1920, 1080);
+        public PixelPoint Cursor { get; set; } = new(100, 100);
+        public IReadOnlyList<Rect> GetMonitors() => Monitors;
+        public Rect? GetPrimaryMonitor() => Primary;
+        public PixelPoint GetCursorPosition() => Cursor;
     }
 
-    private static readonly Rect Virtual = new(-1920, 0, 3840, 1080);
+    private static readonly Rect First = new(0, 0, 1920, 1080);
+    private static readonly Rect Second = new(1920, 0, 2560, 1440);
 
-    private static (RegionCoordinator c, MemoryStore s) Make(bool restore = true)
+    private static (RegionCoordinator c, FakeScreen s) Make(PixelPoint? cursor = null)
     {
-        var store = new MemoryStore { Current = new AppSettings { RestoreLastRegion = restore } };
-        return (new RegionCoordinator(new RegionState(), store), store);
+        var screen = new FakeScreen { Cursor = cursor ?? new PixelPoint(100, 100) };
+        return (new RegionCoordinator(new RegionState(), screen), screen);
     }
 
     [Fact]
-    public void Commit_Valid_ReplacesAndSaves()
+    public void NewState_IsFullScreen_OnInjectedCursorMonitor()
     {
-        var (c, s) = Make();
-        c.CommitSelection(new Rect(100, 100, 400, 300)).Should().BeTrue();
-        c.State.Region.Should().Be(new Rect(100, 100, 400, 300));
-        s.Current.LastRegion.Should().BeEquivalentTo(new RegionSettings { X = 100, Y = 100, Width = 400, Height = 300 });
+        var (c, _) = Make(new PixelPoint(3000, 500));
+        c.State.Mode.Should().Be(RegionMode.FullScreen);
+        c.State.HasRegion.Should().BeFalse();
+        c.State.CaptureRect.Should().Be(Second);
+        c.State.ShouldShowBorder.Should().BeFalse();
     }
 
     [Fact]
-    public void Commit_Null_Esc_KeepsPreviousRegionAndSettings()
+    public void Clear_FromSpecified_ReturnsToFullScreen_OnCurrentCursorMonitor_AndRaisesChanged()
     {
         var (c, s) = Make();
         c.CommitSelection(new Rect(100, 100, 400, 300));
-        int saves = s.Saves;
+        c.State.Mode.Should().Be(RegionMode.Specified);
+        int changes = 0;
+        c.State.Changed += (_, _) => changes++;
+
+        s.Cursor = new PixelPoint(3000, 500);
+        c.Clear();
+
+        c.State.Mode.Should().Be(RegionMode.FullScreen);
+        c.State.CaptureRect.Should().Be(Second);
+        changes.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public void Clear_WhenAlreadyFullScreen_RePicksCursorMonitor()
+    {
+        var (c, s) = Make();
+        c.State.CaptureRect.Should().Be(First);
+        s.Cursor = new PixelPoint(2000, 10);
+        c.Clear();
+        c.State.CaptureRect.Should().Be(Second);
+    }
+
+    [Fact]
+    public void Commit_Valid_BecomesSpecified()
+    {
+        var (c, _) = Make();
+        c.CommitSelection(RegionMath.Normalize(new PixelPoint(500, 400), new PixelPoint(100, 100))).Should().BeTrue();
+        c.State.Mode.Should().Be(RegionMode.Specified);
+        c.State.Region.Should().Be(new Rect(100, 100, 400, 300));
+        c.State.CaptureRect.Should().Be(new Rect(100, 100, 400, 300));
+    }
+
+    [Fact]
+    public void Commit_Null_Esc_KeepsSpecifiedRegion()
+    {
+        var (c, _) = Make();
+        c.CommitSelection(new Rect(100, 100, 400, 300));
         c.CommitSelection(null).Should().BeFalse();
         c.State.Region.Should().Be(new Rect(100, 100, 400, 300));
-        s.Saves.Should().Be(saves);
     }
 
     [Theory]
     [InlineData(31, 100)]
     [InlineData(100, 31)]
     [InlineData(0, 0)]
-    public void Commit_TooSmall_KeepsPreviousRegion(int w, int h)
+    public void Commit_TooSmall_KeepsSpecifiedRegion(int w, int h)
     {
-        var (c, s) = Make();
+        var (c, _) = Make();
         c.CommitSelection(new Rect(100, 100, 400, 300));
         c.CommitSelection(new Rect(5, 5, w, h)).Should().BeFalse();
         c.State.Region.Should().Be(new Rect(100, 100, 400, 300));
-        s.Current.LastRegion.Width.Should().Be(400);
     }
 
     [Fact]
-    public void Commit_TooSmall_WithNoPreviousRegion_StaysEmpty()
+    public void Commit_TooSmallOrCancelled_KeepsFullScreen()
     {
         var (c, _) = Make();
-        c.CommitSelection(new Rect(5, 5, 10, 10));
-        c.State.HasRegion.Should().BeFalse();
+        c.CommitSelection(new Rect(5, 5, 10, 10)).Should().BeFalse();
+        c.CommitSelection(null).Should().BeFalse();
+        c.State.Mode.Should().Be(RegionMode.FullScreen);
+        c.State.CaptureRect.Should().Be(First);
     }
 
     [Fact]
-    public void Commit_RestoreOff_DoesNotSave()
+    public void FullScreen_BorderHidden_EvenWhenToggleIsOn_SpecifiedShowsOnlyWhenToggleOn()
     {
-        var (c, s) = Make(restore: false);
-        c.CommitSelection(new Rect(100, 100, 400, 300)).Should().BeTrue();
-        c.State.HasRegion.Should().BeTrue();
-        s.Saves.Should().Be(0);
-    }
+        var (c, _) = Make();
+        c.State.IsBorderVisible.Should().BeTrue();
+        c.State.ShouldShowBorder.Should().BeFalse();
+        c.State.ToggleBorder(); // no effect without a region
+        c.State.IsBorderVisible.Should().BeTrue();
+        c.State.ShouldShowBorder.Should().BeFalse();
 
-    [Fact]
-    public void Commit_SaveFailure_DoesNotThrow_AndIsLogged()
-    {
-        var store = new MemoryStore { ThrowOnSave = true };
-        Exception? logged = null;
-        var c = new RegionCoordinator(new RegionState(), store, (_, ex) => logged = ex);
-        c.CommitSelection(new Rect(0, 0, 100, 100)).Should().BeTrue();
-        logged.Should().BeOfType<IOException>();
-    }
-
-    [Fact]
-    public void Restore_SavedRegion_IsApplied()
-    {
-        var (c, s) = Make();
-        s.Current = s.Current with { LastRegion = new RegionSettings { X = 100, Y = 100, Width = 400, Height = 300 } };
-        c.Restore(Virtual).Should().BeTrue();
-        c.State.Region.Should().Be(new Rect(100, 100, 400, 300));
-    }
-
-    [Fact]
-    public void Restore_OffscreenRegion_IsClampedIntoVirtualScreen()
-    {
-        var (c, s) = Make();
-        s.Current = s.Current with { LastRegion = new RegionSettings { X = 5000, Y = 100, Width = 400, Height = 300 } };
-        c.Restore(Virtual).Should().BeTrue();
-        c.State.Region.Should().Be(new Rect(1520, 100, 400, 300));
-    }
-
-    [Fact]
-    public void Restore_OptionOff_DoesNothing()
-    {
-        var (c, s) = Make(restore: false);
-        s.Current = s.Current with { LastRegion = new RegionSettings { X = 100, Y = 100, Width = 400, Height = 300 } };
-        c.Restore(Virtual).Should().BeFalse();
-        c.State.HasRegion.Should().BeFalse();
-    }
-
-    [Fact]
-    public void Restore_ClearedOrTooSmallSavedRegion_IsNotRestored()
-    {
-        var (c, s) = Make();
-        c.Restore(Virtual).Should().BeFalse(); // default 0,0,0,0
-        s.Current = s.Current with { LastRegion = new RegionSettings { X = 10, Y = 10, Width = 20, Height = 20 } };
-        c.Restore(Virtual).Should().BeFalse();
-        c.State.HasRegion.Should().BeFalse();
-    }
-
-    [Fact]
-    public void Restore_ShrunkBelowMinimumByVirtualScreen_IsNotRestored()
-    {
-        var (c, s) = Make();
-        s.Current = s.Current with { LastRegion = new RegionSettings { X = 0, Y = 0, Width = 400, Height = 300 } };
-        c.Restore(new Rect(0, 0, 400, 20)).Should().BeFalse();
-    }
-
-    [Fact]
-    public void Clear_RemovesRegionAndEmptiesSavedLastRegion_ThenNoRestore()
-    {
-        var (c, s) = Make();
         c.CommitSelection(new Rect(100, 100, 400, 300));
+        c.State.ShouldShowBorder.Should().BeTrue();
+        c.State.ToggleBorder();
+        c.State.ShouldShowBorder.Should().BeFalse();
+        c.State.ToggleBorder();
         c.Clear();
-        c.State.HasRegion.Should().BeFalse();
-        s.Current.LastRegion.Should().BeEquivalentTo(new RegionSettings { X = 0, Y = 0, Width = 0, Height = 0 });
-        new RegionCoordinator(new RegionState(), s).Restore(Virtual).Should().BeFalse();
+        c.State.ShouldShowBorder.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Startup_PicksPrimary_WhenCursorOutsideEveryMonitor()
+    {
+        var screen = new FakeScreen { Cursor = new PixelPoint(-5000, -5000), Primary = Second };
+        new RegionCoordinator(new RegionState(), screen).State.CaptureRect.Should().Be(Second);
     }
 
     [Fact]

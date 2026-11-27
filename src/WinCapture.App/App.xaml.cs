@@ -71,9 +71,11 @@ public partial class App : Application
                         }
                     }));
                 services.AddSingleton<RegionState>();
+                services.AddSingleton<IScreenInfo, WinCapture.Native.Interop.Win32ScreenInfo>();
+                // Creating the coordinator puts the state into full screen on the cursor monitor (no restore).
                 services.AddSingleton(sp => new RegionCoordinator(
                     sp.GetRequiredService<RegionState>(),
-                    sp.GetRequiredService<ISettingsStore>(),
+                    sp.GetRequiredService<IScreenInfo>(),
                     (message, ex) => Log.Warning(ex, "{Message}", message)));
                 services.AddSingleton<SelectionController>();
                 services.AddSingleton<BorderController>();
@@ -87,15 +89,8 @@ public partial class App : Application
         // Creating the controller wires RegionState to the border window (hotkeys connect in later tasks).
         _host.Services.GetRequiredService<BorderController>();
 
-        // Restore the last region (corrected into the virtual screen) and show its border.
-        try
-        {
-            _host.Services.GetRequiredService<RegionCoordinator>().Restore(WinCapture.Native.Interop.WindowInterop.GetVirtualScreen());
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Restoring last region failed");
-        }
+        // Startup state is full screen on the cursor monitor (regions are never restored).
+        _host.Services.GetRequiredService<RegionCoordinator>();
 
         AppTheme.Initialize();
         CreateTrayIcon();
@@ -237,7 +232,7 @@ public partial class App : Application
                 services.GetRequiredService<RegionState>().ToggleBorder();
                 break;
             case HotkeyAction.ClearRegion:
-                services.GetRequiredService<RegionCoordinator>().Clear(); // also empties saved lastRegion
+                services.GetRequiredService<RegionCoordinator>().Clear(); // back to full screen on the cursor monitor
                 break;
             case HotkeyAction.ToggleAppWindow:
                 ToggleAppWindow();
@@ -290,7 +285,7 @@ public partial class App : Application
         }
 
         var autoHide = _host.Services.GetRequiredService<ISettingsStore>().Load().AutoHideAppWindow;
-        var region = _host.Services.GetRequiredService<RegionState>().Region;
+        var region = _host.Services.GetRequiredService<RegionState>().CaptureRect;
         var hidAny = false;
         foreach (var window in new Window?[] { _settingsWindow, _controlBar })
         {

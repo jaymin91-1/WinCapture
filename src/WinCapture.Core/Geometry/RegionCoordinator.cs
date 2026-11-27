@@ -1,23 +1,24 @@
 using System.Globalization;
-using WinCapture.Core.Settings;
 
 namespace WinCapture.Core.Geometry;
 
 /// <summary>
-/// Region state rules that involve settings: applying a selection result, restoring the last region
-/// at startup, and clearing. No UI dependencies; settings access goes through <see cref="ISettingsStore"/>.
+/// Region state rules: the state starts as full screen on the cursor monitor, a valid drag selection makes it a
+/// specified region, and Clear returns to full screen on the monitor under the cursor at that moment.
+/// Regions are never saved or restored. No UI dependencies; screen information is injected.
 /// </summary>
 public sealed class RegionCoordinator
 {
     private readonly RegionState _state;
-    private readonly ISettingsStore _settings;
+    private readonly IScreenInfo _screen;
     private readonly Action<string, Exception?>? _log;
 
-    public RegionCoordinator(RegionState state, ISettingsStore settings, Action<string, Exception?>? log = null)
+    public RegionCoordinator(RegionState state, IScreenInfo screen, Action<string, Exception?>? log = null)
     {
         _state = state;
-        _settings = settings;
+        _screen = screen;
         _log = log;
+        ResetToFullScreen(); // startup state: full screen on the cursor monitor
     }
 
     public RegionState State => _state;
@@ -27,9 +28,8 @@ public sealed class RegionCoordinator
         string.Create(CultureInfo.InvariantCulture, $"{r.Width} × {r.Height}");
 
     /// <summary>
-    /// Applies a selection result. A null result (Esc) or an invalid one (smaller than 32 px) keeps the
-    /// previous region untouched. A valid one replaces the region and, when restoreLastRegion is on,
-    /// is saved to settings. Returns true when the region was replaced.
+    /// Applies a selection result. A null result (Esc) or an invalid one (smaller than 32 px) keeps the current
+    /// state (specified region or full screen). A valid one makes it a specified region. Returns true when applied.
     /// </summary>
     public bool CommitSelection(Rect? selected)
     {
@@ -39,37 +39,11 @@ public sealed class RegionCoordinator
         }
 
         _state.SetRegion(region);
-        SaveLastRegion(region, onlyIfRestoreEnabled: true);
         return true;
     }
 
-    /// <summary>
-    /// Startup restore: loads the saved region (when enabled), corrects it into the virtual screen,
-    /// and applies it only if it is still a valid region (at least 32 px). Returns true when restored.
-    /// </summary>
-    public bool Restore(Rect virtualScreen)
-    {
-        var saved = RegionMath.GetRestorableRegion(_settings.Load());
-        if (saved is not { } region)
-        {
-            return false;
-        }
-
-        var clamped = RegionMath.ClampToVirtualScreen(region, virtualScreen);
-        if (!RegionMath.IsValidRegion(clamped))
-        {
-            return false;
-        }
-
-        _state.SetRegion(clamped);
-        return true;
-    }
-
-    /// <summary>
-    /// Applies a region changed by dragging (move/resize). Refused while locked. When <paramref name="persist"/>
-    /// is true (drag finished) lastRegion is saved if restoreLastRegion is on. Returns true when the state changed or was saved.
-    /// </summary>
-    public bool UpdateRegion(Rect region, bool persist)
+    /// <summary>Applies a region changed by dragging (move/resize). Refused while locked or when invalid.</summary>
+    public bool UpdateRegion(Rect region)
     {
         if (_state.IsLocked || !RegionMath.IsValidRegion(region))
         {
@@ -77,36 +51,31 @@ public sealed class RegionCoordinator
         }
 
         _state.SetRegion(region);
-        if (persist)
-        {
-            SaveLastRegion(region, onlyIfRestoreEnabled: true);
-        }
-
         return true;
     }
 
-    /// <summary>ClearRegion: removes the region and empties the saved lastRegion (0,0,0,0), regardless of the restore option.</summary>
-    public void Clear()
-    {
-        _state.ClearRegion();
-        SaveLastRegion(new Rect(0, 0, 0, 0), onlyIfRestoreEnabled: false);
-    }
+    /// <summary>ClearRegion: discards the specified region and re-picks the monitor under the cursor (full screen).</summary>
+    public void Clear() => ResetToFullScreen();
 
-    private void SaveLastRegion(Rect region, bool onlyIfRestoreEnabled)
+    private void ResetToFullScreen()
     {
         try
         {
-            var current = _settings.Load();
-            if (onlyIfRestoreEnabled && !current.RestoreLastRegion)
+            var monitor = MonitorSelector.PickCursorMonitor(
+                _screen.GetMonitors(), _screen.GetCursorPosition(), _screen.GetPrimaryMonitor());
+            if (monitor is { } m)
             {
-                return;
+                _state.SetFullScreen(m);
             }
-
-            _settings.Save(current with { LastRegion = RegionMath.ToSettings(region) });
+            else
+            {
+                _state.ClearRegion(); // no monitor known: still leave the specified state
+            }
         }
         catch (Exception ex)
         {
-            _log?.Invoke("Failed to save lastRegion", ex);
+            _log?.Invoke("Failed to pick the full-screen monitor", ex);
+            _state.ClearRegion();
         }
     }
 }

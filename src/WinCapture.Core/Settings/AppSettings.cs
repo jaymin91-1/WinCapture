@@ -18,12 +18,6 @@ public sealed record AppSettings
     [JsonPropertyName("fileNamePattern")]
     public string FileNamePattern { get; init; } = "WinCapture_{date}_{time}";
 
-    [JsonPropertyName("restoreLastRegion")]
-    public bool RestoreLastRegion { get; init; } = true;
-
-    [JsonPropertyName("lastRegion")]
-    public RegionSettings LastRegion { get; init; } = new();
-
     [JsonPropertyName("hotkeys")]
     public HotkeySettings Hotkeys { get; init; } = new();
 
@@ -56,21 +50,6 @@ public sealed record AppSettings
 
     [JsonPropertyName("onboardingDone")]
     public bool OnboardingDone { get; init; }
-}
-
-public sealed record RegionSettings
-{
-    [JsonPropertyName("x")]
-    public int X { get; init; }
-
-    [JsonPropertyName("y")]
-    public int Y { get; init; }
-
-    [JsonPropertyName("width")]
-    public int Width { get; init; }
-
-    [JsonPropertyName("height")]
-    public int Height { get; init; }
 }
 
 /// <summary>Hotkey strings only; parsing is done in a later session.</summary>

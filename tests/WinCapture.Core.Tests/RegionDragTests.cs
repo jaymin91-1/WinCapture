@@ -48,38 +48,18 @@ public class RegionDragTests
     }
 
     [Fact]
-    public void UpdateRegion_Refused_While_Locked_And_Persists_Only_When_Asked()
+    public void UpdateRegion_Refused_While_Locked_And_Applied_When_Unlocked()
     {
-        var store = new FakeStore();
         var state = new RegionState();
-        var c = new RegionCoordinator(state, store);
+        var c = new RegionCoordinator(state, new RegionCoordinatorTests.FakeScreen());
 
         state.SetLocked(true);
-        c.UpdateRegion(Start, persist: true).Should().BeFalse();
+        c.UpdateRegion(Start).Should().BeFalse();
         state.Region.Should().BeNull();
 
         state.SetLocked(false);
-        c.UpdateRegion(Start, persist: false).Should().BeTrue();
-        store.Saves.Should().Be(0);
-        c.UpdateRegion(new Rect(10, 10, 200, 200), persist: true).Should().BeTrue();
-        store.Saves.Should().Be(1);
-        store.Current.LastRegion.Should().Be(new RegionSettings { X = 10, Y = 10, Width = 200, Height = 200 });
-    }
-
-    [Fact]
-    public void UpdateRegion_Does_Not_Persist_When_Restore_Off()
-    {
-        var store = new FakeStore { Current = new AppSettings { RestoreLastRegion = false } };
-        var c = new RegionCoordinator(new RegionState(), store);
-        c.UpdateRegion(Start, persist: true).Should().BeTrue();
-        store.Saves.Should().Be(0);
-    }
-
-    private sealed class FakeStore : ISettingsStore
-    {
-        public AppSettings Current { get; set; } = new();
-        public int Saves { get; private set; }
-        public AppSettings Load() => Current;
-        public void Save(AppSettings settings) { Current = settings; Saves++; }
+        c.UpdateRegion(Start).Should().BeTrue();
+        c.UpdateRegion(new Rect(10, 10, 200, 200)).Should().BeTrue();
+        state.Region.Should().Be(new Rect(10, 10, 200, 200));
     }
 }

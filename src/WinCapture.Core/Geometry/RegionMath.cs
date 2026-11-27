@@ -1,8 +1,6 @@
-using WinCapture.Core.Settings;
-
 namespace WinCapture.Core.Geometry;
 
-/// <summary>Pure region calculations: drag normalization, border rectangle, last-region restore.</summary>
+/// <summary>Pure region calculations: drag normalization, border rectangle, virtual-screen clamp.</summary>
 public static class RegionMath
 {
     /// <summary>Minimum width and height of a valid region, in physical pixels.</summary>
@@ -31,26 +29,6 @@ public static class RegionMath
         }
 
         return new Rect(region.X - thickness, region.Y - thickness, region.Width + 2 * thickness, region.Height + 2 * thickness);
-    }
-
-    public static Rect FromSettings(RegionSettings s) => new(s.X, s.Y, s.Width, s.Height);
-
-    public static RegionSettings ToSettings(Rect r) => new() { X = r.X, Y = r.Y, Width = r.Width, Height = r.Height };
-
-    /// <summary>
-    /// Region to restore at startup, or null when restore is off or nothing is saved
-    /// (width or height not positive; ClearRegion saves 0,0,0,0).
-    /// The result is not corrected to the virtual screen; see <see cref="ClampToVirtualScreen"/>.
-    /// </summary>
-    public static Rect? GetRestorableRegion(AppSettings settings)
-    {
-        if (!settings.RestoreLastRegion)
-        {
-            return null;
-        }
-
-        var r = FromSettings(settings.LastRegion);
-        return r.IsEmpty ? null : r;
     }
 
     /// <summary>

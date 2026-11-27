@@ -103,7 +103,7 @@ public sealed class BorderWindow : OverlayWindowBase
                 return;
             }
 
-            coordinator.UpdateRegion(next, persist: false);
+            coordinator.UpdateRegion(next);
             _tooltip.ShowAt(RegionInteraction.FormatTooltip(next), cursor);
             return;
         }
@@ -163,10 +163,10 @@ public sealed class BorderWindow : OverlayWindowBase
         _drag = null;
         ReleaseMouseCapture();
         _tooltip.Hide();
-        // Skip saving when the drag did not change the region.
+        // Re-apply the final region once if the drag changed it (idempotent; nothing is persisted).
         if (persist && _coordinator?.State.Region is { } final && final != _dragStartRegion)
         {
-            _coordinator.UpdateRegion(final, persist: true); // save lastRegion once, at the end
+            _coordinator.UpdateRegion(final); // apply once, at the end
         }
     }
 

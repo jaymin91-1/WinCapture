@@ -39,8 +39,6 @@ public sealed class SettingsStoreTests : IDisposable
         s.SaveFolder.Should().Be("%USERPROFILE%\\Pictures\\WinCapture");
         s.UseTypeSubfolders.Should().BeFalse();
         s.FileNamePattern.Should().Be("WinCapture_{date}_{time}");
-        s.RestoreLastRegion.Should().BeTrue();
-        s.LastRegion.Should().Be(new RegionSettings { X = 0, Y = 0, Width = 0, Height = 0 });
         s.Hotkeys.SelectRegion.Should().Be("Ctrl+Alt+R");
         s.Hotkeys.Screenshot.Should().Be("Ctrl+Alt+S");
         s.Hotkeys.RecordVideo.Should().Be("Ctrl+Alt+V");
@@ -86,8 +84,6 @@ public sealed class SettingsStoreTests : IDisposable
             SaveFolder = "D:\\Shots",
             UseTypeSubfolders = true,
             FileNamePattern = "Cap_{date}",
-            RestoreLastRegion = false,
-            LastRegion = new RegionSettings { X = -1920, Y = 10, Width = 640, Height = 480 },
             Hotkeys = new HotkeySettings { SelectRegion = "Ctrl+Shift+1", ToggleAppWindow = "Alt+F9" },
             Border = new BorderSettings { Color = "#00FF00", Thickness = 4 },
             Capture = new CaptureSettings { IncludeCursor = false, CopyToClipboard = true },
@@ -102,6 +98,23 @@ public sealed class SettingsStoreTests : IDisposable
         var store = NewStore();
         store.Save(changed);
         store.Load().Should().Be(changed);
+    }
+
+    [Fact]
+    public void Save_DoesNotWriteRegionKeys()
+    {
+        NewStore().Save(new AppSettings());
+        var text = File.ReadAllText(SettingsPath);
+        text.Should().NotContain("restoreLastRegion").And.NotContain("lastRegion");
+    }
+
+    // Legacy files (before regions stopped being saved) still load; the old keys are ignored.
+    [Fact]
+    public void Load_LegacyRegionKeys_AreIgnored_OtherValuesLoaded()
+    {
+        WriteRaw("{\"saveFolder\":\"D:\\\\Shots\",\"restoreLastRegion\":true,\"lastRegion\":{\"x\":1,\"y\":2,\"width\":300,\"height\":200}}");
+        var loaded = NewStore().Load();
+        loaded.SaveFolder.Should().Be("D:\\Shots");
     }
 
     [Fact]

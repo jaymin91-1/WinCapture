@@ -92,39 +92,6 @@ public sealed class RegionTests : IDisposable
         inner.Should().Be(region);
     }
 
-    [Fact]
-    public void Restore_On_ReturnsSavedRegion_AndSurvivesSaveLoad()
-    {
-        var store = new JsonSettingsStore(Path.Combine(_dir, "settings.json"), new FixedClock());
-        var region = new Rect(-1920, 40, 800, 600);
-        store.Save(new AppSettings { RestoreLastRegion = true, LastRegion = RegionMath.ToSettings(region) });
-
-        RegionMath.GetRestorableRegion(store.Load()).Should().Be(region);
-    }
-
-    [Fact]
-    public void Restore_Off_ReturnsNull()
-    {
-        var s = new AppSettings { RestoreLastRegion = false, LastRegion = RegionMath.ToSettings(new Rect(1, 2, 300, 200)) };
-        RegionMath.GetRestorableRegion(s).Should().BeNull();
-    }
-
-    [Theory]
-    [InlineData(0, 0)]
-    [InlineData(0, 100)]
-    [InlineData(100, 0)]
-    public void Restore_ZeroSize_ReturnsNull(int w, int h)
-    {
-        var s = new AppSettings { RestoreLastRegion = true, LastRegion = new RegionSettings { Width = w, Height = h } };
-        RegionMath.GetRestorableRegion(s).Should().BeNull();
-    }
-
-    [Fact]
-    public void Restore_DefaultSettings_ReturnsNull()
-    {
-        RegionMath.GetRestorableRegion(new AppSettings()).Should().BeNull();
-    }
-
     private static readonly Rect Virtual = new(-1920, 0, 4480, 1440);
 
     [Fact]
