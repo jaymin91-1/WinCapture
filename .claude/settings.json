@@ -1,0 +1,17 @@
+{
+  "language": "korean",
+  "permissions": {
+    "defaultMode": "bypassPermissions",
+    "deny": [
+      "Bash(sudo:*)",
+      "Bash(rm -rf /:*)",
+      "Bash(rm -rf ~:*)",
+      "Bash(git push --force:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean:*)",
+      "Bash(dotnet run:*)",
+      "Bash(dotnet watch:*)",
+      "Read(./.env)"
+    ]
+  }
+}

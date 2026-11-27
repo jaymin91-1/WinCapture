@@ -1,0 +1,27 @@
+# .NET
+bin/
+obj/
+publish/
+*.user
+*.suo
+.vs/
+TestResults/
+*.nupkg
+
+# FFmpeg 바이너리 (저장소에 포함하지 않음)
+ffmpeg/
+ffmpeg.exe
+
+# 캡처 결과물 (테스트 리소스는 예외)
+*.mp4
+*.gif
+*.png
+!tests/**/Resources/**/*.png
+!docs/images/*.png
+!docs/images/*.gif
+
+# 기타
+.env
+.env.*
+.DS_Store
+sample/
