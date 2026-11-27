@@ -24,12 +24,14 @@
 - CI: 성공 (코드 최종 커밋 239222f, 테스트 105개)
 - 주요 결정: ClearRegion은 저장된 lastRegion도 비운다 (사용자 결정 A, 2026-11-27)
 
-## 세션 3 (상태: 진행 중)
+## 세션 3 (상태: 사용자 승인 대기)
 - task-01 통과 (반려 0회): Core 파일명 패턴·중복 회피·금지 문자·저장 경로, {counter}=폴더 내 최대 번호+1(날짜 등은 와일드카드)
 - task-02 통과 (반려 0회): CapturePlan.Clip(가상 화면 교차), Native BitBlt 캡처(핸들 해제, 커서 합성), 96dpi PNG, 백그라운드 실행
 - task-03 통과 (반려 0회): ToastWindow(OverlayWindowBase, NOACTIVATE 유지·클릭 수신), ToastService 우하단 쌓기, 오류색 #F04452(코더 결정)
 - task-04 통과 (반려 0회): ScreenshotWorkflow(메인 창 캡처·트레이·Ctrl+Alt+S 단일 경로), 클립보드 옵션, 성공/실패 토스트(explorer /select), 연타는 진행 중 무시, 자동 숨김 코드·설정 키 제거
 - task-05 통과 (반려 0회): 단축키 등록 실패 알림을 경고 토스트로 전환(묶음 1개), 미사용 코드 정리(Overlaps·CaptureToFileAsync)
+- 세션 검증: 통과 (tasks/session-3/session-review.md)
+- CI: 성공 (코드 최종 커밋 519051c, 테스트 217개)
 - 주요 결정: {counter} 규칙(사용자), 앱 창 자동 숨김 삭제(사용자: 보이는 앱 창은 캡처에 나옴)
 
 ## 수정 이력
