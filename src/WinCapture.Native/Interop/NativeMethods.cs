@@ -87,6 +87,7 @@ public static partial class NativeMethods
     public static partial bool GetWindowRect(IntPtr hwnd, out RECT rect);
 
     public const uint MONITOR_DEFAULTTOPRIMARY = 1;
+    public const uint MONITOR_DEFAULTTONEAREST = 2;
 
     [StructLayout(LayoutKind.Sequential)]
     public struct MONITORINFO

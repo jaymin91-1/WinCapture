@@ -42,6 +42,20 @@ public sealed unsafe class Win32ScreenInfo : IScreenInfo
         return ToRect(info.rcMonitor);
     }
 
+    /// <summary>Work area (excluding the taskbar) of the monitor containing the cursor, nearest monitor when outside; null on failure.</summary>
+    public Rect? GetWorkAreaAtCursor()
+    {
+        var cursor = WindowInterop.GetCursorPosition();
+        var monitor = NativeMethods.MonitorFromPoint(new NativeMethods.POINT { X = cursor.X, Y = cursor.Y }, NativeMethods.MONITOR_DEFAULTTONEAREST);
+        if (monitor == IntPtr.Zero)
+        {
+            return null;
+        }
+
+        var info = new NativeMethods.MONITORINFO { cbSize = (uint)sizeof(NativeMethods.MONITORINFO) };
+        return NativeMethods.GetMonitorInfo(monitor, ref info) ? ToRect(info.rcWork) : null;
+    }
+
     public PixelPoint GetCursorPosition() => WindowInterop.GetCursorPosition();
 
     [UnmanagedCallersOnly]

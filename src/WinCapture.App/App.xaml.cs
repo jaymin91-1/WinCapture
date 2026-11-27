@@ -74,7 +74,9 @@ public partial class App : Application
                         }
                     }));
                 services.AddSingleton<RegionState>();
-                services.AddSingleton<IScreenInfo, WinCapture.Native.Interop.Win32ScreenInfo>();
+                services.AddSingleton<WinCapture.Native.Interop.Win32ScreenInfo>();
+                services.AddSingleton<IScreenInfo>(sp => sp.GetRequiredService<WinCapture.Native.Interop.Win32ScreenInfo>());
+                services.AddSingleton<WinCapture.App.Toast.IToastService, WinCapture.App.Toast.ToastService>();
                 // Creating the coordinator puts the state into full screen on the cursor monitor (no restore).
                 services.AddSingleton(sp => new RegionCoordinator(
                     sp.GetRequiredService<RegionState>(),
