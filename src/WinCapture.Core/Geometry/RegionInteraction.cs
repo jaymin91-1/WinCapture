@@ -25,6 +25,9 @@ public static class RegionInteraction
     public const int GripSize = 12;
     public const int MinSize = 32;
 
+    /// <summary>Tooltip shown instead of changing the region while it is locked (recording).</summary>
+    public const string LockedMessage = "녹화 중에는 영역을 변경할 수 없습니다";
+
     /// <summary>Classifies a point. The grip wins over the band where they overlap.</summary>
     public static RegionHit HitTest(Rect region, PixelPoint p)
     {

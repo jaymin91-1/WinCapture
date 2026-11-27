@@ -14,14 +14,25 @@ public sealed class BorderVisual : FrameworkElement
     private CoreRect _regionLocal;
     private CoreRect _outerLocal;
     private CoreRect _gripLocal;
+    private CoreRect _bandLocal;
     private double _scale = 1.0;
     private Brush _brush = Brushes.Red;
 
-    public void Update(CoreRect regionLocal, CoreRect outerLocal, CoreRect gripLocal, double scale, Brush brush)
+    private static readonly Brush HitBrush = CreateHitBrush();
+
+    private static Brush CreateHitBrush()
+    {
+        var b = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0));
+        b.Freeze();
+        return b;
+    }
+
+    public void Update(CoreRect regionLocal, CoreRect outerLocal, CoreRect gripLocal, CoreRect bandLocal, double scale, Brush brush)
     {
         _regionLocal = regionLocal;
         _outerLocal = outerLocal;
         _gripLocal = gripLocal;
+        _bandLocal = bandLocal;
         _scale = scale;
         _brush = brush;
         InvalidateVisual();
@@ -36,6 +47,13 @@ public sealed class BorderVisual : FrameworkElement
 
         var outer = ToWpf(DpiConverter.ToDip(_outerLocal, _scale));
         var inner = ToWpf(DpiConverter.ToDip(_regionLocal, _scale));
+
+        // Hit band: almost invisible (alpha 1) so the layered window receives mouse input there
+        // (fully transparent pixels would be click-through). Outside the region only; capture-excluded anyway.
+        var band = ToWpf(DpiConverter.ToDip(_bandLocal, _scale));
+        var bandRing = new CombinedGeometry(
+            GeometryCombineMode.Exclude, new RectangleGeometry(band), new RectangleGeometry(inner));
+        dc.DrawGeometry(HitBrush, null, bandRing);
 
         // Ring = outer rectangle minus the region, so no region pixel is painted.
         var ring = new CombinedGeometry(

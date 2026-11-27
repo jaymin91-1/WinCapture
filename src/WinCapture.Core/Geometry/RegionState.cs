@@ -1,8 +1,21 @@
 namespace WinCapture.Core.Geometry;
 
 /// <summary>Region/border state: whether a region exists and whether its border is shown. No UI dependencies.</summary>
-public sealed class RegionState
+/// <summary>Lock switch for region changes. Session 4 (recording) turns it on while recording.</summary>
+public interface IRegionLock
 {
+    /// <summary>True while move/resize must be refused (recording in progress).</summary>
+    bool IsLocked { get; }
+
+    void SetLocked(bool locked);
+}
+
+public sealed class RegionState : IRegionLock
+{
+    public bool IsLocked { get; private set; }
+
+    public void SetLocked(bool locked) => IsLocked = locked;
+
     public Rect? Region { get; private set; }
 
     public bool IsBorderVisible { get; private set; } = true;

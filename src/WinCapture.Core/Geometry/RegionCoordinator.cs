@@ -65,6 +65,26 @@ public sealed class RegionCoordinator
         return true;
     }
 
+    /// <summary>
+    /// Applies a region changed by dragging (move/resize). Refused while locked. When <paramref name="persist"/>
+    /// is true (drag finished) lastRegion is saved if restoreLastRegion is on. Returns true when the state changed or was saved.
+    /// </summary>
+    public bool UpdateRegion(Rect region, bool persist)
+    {
+        if (_state.IsLocked || !RegionMath.IsValidRegion(region))
+        {
+            return false;
+        }
+
+        _state.SetRegion(region);
+        if (persist)
+        {
+            SaveLastRegion(region, onlyIfRestoreEnabled: true);
+        }
+
+        return true;
+    }
+
     /// <summary>ClearRegion: removes the region and empties the saved lastRegion (0,0,0,0), regardless of the restore option.</summary>
     public void Clear()
     {

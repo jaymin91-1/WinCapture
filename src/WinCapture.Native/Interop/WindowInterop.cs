@@ -21,6 +21,16 @@ public static class WindowInterop
             hwnd, NativeMethods.HWND_TOPMOST, bounds.X, bounds.Y, bounds.Width, bounds.Height,
             NativeMethods.SWP_NOACTIVATE | NativeMethods.SWP_NOOWNERZORDER);
 
+    /// <summary>Moves only (keeps size), physical pixels, topmost, without activation.</summary>
+    public static bool MoveTo(IntPtr hwnd, int x, int y) =>
+        NativeMethods.SetWindowPos(
+            hwnd, NativeMethods.HWND_TOPMOST, x, y, 0, 0,
+            NativeMethods.SWP_NOSIZE | NativeMethods.SWP_NOACTIVATE | NativeMethods.SWP_NOOWNERZORDER);
+
+    /// <summary>Cursor position in virtual screen physical pixels.</summary>
+    public static PixelPoint GetCursorPosition() =>
+        NativeMethods.GetCursorPos(out var p) ? new PixelPoint(p.X, p.Y) : new PixelPoint(0, 0);
+
     /// <summary>Bounding rectangle of all monitors in virtual screen coordinates.</summary>
     public static Rect GetVirtualScreen() => new(
         NativeMethods.GetSystemMetrics(NativeMethods.SM_XVIRTUALSCREEN),

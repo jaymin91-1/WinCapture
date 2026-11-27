@@ -8,12 +8,14 @@ public sealed class BorderController : IDisposable
 {
     private readonly RegionState _state;
     private readonly ISettingsStore _settings;
+    private readonly RegionCoordinator _coordinator;
     private BorderWindow? _window;
 
-    public BorderController(RegionState state, ISettingsStore settings)
+    public BorderController(RegionState state, ISettingsStore settings, RegionCoordinator coordinator)
     {
         _state = state;
         _settings = settings;
+        _coordinator = coordinator;
         _state.Changed += OnChanged;
     }
 
@@ -32,7 +34,7 @@ public sealed class BorderController : IDisposable
             return;
         }
 
-        _window ??= new BorderWindow();
+        _window ??= new BorderWindow(_coordinator);
         _window.SetRegion(region, _settings.Load().Border);
         if (!_window.IsVisible)
         {
