@@ -29,3 +29,4 @@
 - `{counter}` 같은 패턴 판정을 SPEC 갱신대로 변경: `{date}`(8자리) `{time}`(6자리) `{w}` `{h}`(숫자)는 어떤 값이든 일치, `{type}`과 고정 문자는 일치해야 함. `NextCounter`가 원본 패턴으로 정규식을 만든다(`CaptureFileNamer.cs`).
 - 테스트: `Counter_WithOtherTokens_ResolvesThemFirst`를 `Counter_OtherTokensMatchAnyValue`(날짜가 다른 WinCapture_20261126_081500_0003.png 있으면 다음 0004)와 `Counter_SizeTokensMatchAnyValue_TypeMustMatch`로 교체. 위 "판단" 중 현재 값 치환 설명과 "질문"은 해소됨.
 - 테스트 192개 통과, 경고 0. CI와 커밋 해시는 푸시 후 아래에 기록.
+- 재작업 커밋 fd4577f, CI 성공 (run 45952159219), 테스트 192개.
