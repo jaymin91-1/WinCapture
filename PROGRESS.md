@@ -12,7 +12,7 @@
 - CI: 성공 (코드 최종 커밋 6ad8878 및 이후 문서 커밋 ad817f1까지 success)
 - 주요 결정: 재실행 신호는 이름 있는 EventWaitHandle, saveFolder는 %USERPROFILE% 문자열 저장 후 사용 시 확장, 트레이 토글 항목은 "/" 표기
 
-## 세션 2 (상태: 진행 중)
+## 세션 2 (상태: 사용자 승인 대기)
 - task-01 통과 (반려 0회): Core 단축키 모델(파싱·직렬화·충돌 검사), CI actions checkout v7 / setup-dotnet v6 (Node 20 경고 해소)
 - task-02 통과 (반려 0회): Core Rect·DPI 변환·드래그 정규화·테두리 사각형·lastRegion 복원과 가상 화면 보정(최소 이동/초과 시 축소)
 - task-03 통과 (반려 0회): Core 히트 테스트(그립 우선)·이동/리사이즈 제한·녹화 중 잠금·창-영역 겹침·툴팁 형식
@@ -20,6 +20,8 @@
 - task-05 통과 (반려 0회): SelectionOverlayWindow(딤·크기 라벨·Esc 취소), RegionCoordinator(선택 적용·복원·ClearRegion), 트레이 '영역 지정' 연결. 선택 오버레이만 NOACTIVATE 예외(allowActivation, 캡처 제외 유지)
 - task-06 통과 (반려 0회): 테두리 띠 드래그 이동·그립 리사이즈(시작점 기준 델타), 8px 띠는 창 확장+알파 1 칠, DragTooltipWindow, 녹화 중 잠금 안내, 드래그 종료 시 저장
 - task-07 통과 (반려 0회): HotkeyService(RegisterHotKey, Reapply, 실패 시 풍선·Statuses), 영역 지정/테두리 토글/영역 해제/앱 창 토글 연결, 트레이 '창 표시/숨김' 활성화, 내부 충돌 단축키는 둘 다 제외
+- 세션 검증: 통과 (tasks/session-2/session-review.md)
+- CI: 성공 (코드 최종 커밋 239222f, 테스트 105개)
 - 주요 결정: ClearRegion은 저장된 lastRegion도 비운다 (사용자 결정 A, 2026-11-27)
 
 ## 수정 이력
