@@ -243,7 +243,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="Root" CornerRadius="6" Background="Transparent" Padding="9,4">
+                    <Border x:Name="Root" CornerRadius="6" Background="Transparent" Padding="9,4" MinHeight="28">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>

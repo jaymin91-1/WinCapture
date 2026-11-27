@@ -21,7 +21,8 @@
     </ui:FluentWindow.Resources>
     <!-- Size: SizeToContent=WidthAndHeight follows this root Grid. No Width/MinWidth on the window or the root.
          The visible width = body column + 2 x 8 DIP. The body column is as wide as the [Capture] button
-         (MinWidth below + a hidden sizer holding the longest label); every other row stretches to that column.
+         (no MinWidth: hidden sizer holding the longest label + icon + button Padding 18,12); the column is
+         max(that button, the 3 mode buttons, the [Select region][Clear region] line) and every row stretches to it.
          The status card is wrapped in WidthIgnoringDecorator so changing coordinates never change the width.
          Resize/maximize lock: ResizeMode=CanMinimize (keeps the minimize button), TitleBar CanMaximize=False and the
          FixedSizeWindow helper (code-behind), see FixedSizeWindow.cs. -->
@@ -66,7 +67,8 @@
                              VerticalAlignment="Center" Fill="{DynamicResource KeycapBorderBrush}" />
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock x:Name="StatusTitleText" FontFamily="{StaticResource AppFontFamily}" FontSize="14"
-                                   FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                   FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"
+                                   TextTrimming="CharacterEllipsis" />
                         <TextBlock x:Name="StatusCoordinatesText" FontFamily="Consolas" FontSize="11.5" Margin="0,2,0,0"
                                    Foreground="{DynamicResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                     </StackPanel>
@@ -101,7 +103,7 @@
 
             <!-- Big accent [Capture] button -->
             <Button x:Name="CaptureButton" Style="{StaticResource PrimaryButtonStyle}" Margin="0,12,0,0"
-                    MinWidth="296" ToolTipService.ShowOnDisabled="True" Click="OnCaptureClick">
+                    Padding="18,12" ToolTipService.ShowOnDisabled="True" Click="OnCaptureClick">
                 <Grid>
                     <!-- Hidden sizer: holds every capture label (filled in code from ControlBarText) so the button
                          is always as wide as the longest label and does not change width when the mode changes.

@@ -105,6 +105,9 @@ public partial class ControlBarWindow : FluentWindow
         var mode = _state.Mode;
         StatusTitleText.Text = ControlBarText.StateTitle(mode);
         BorderChipText.Text = ControlBarText.BorderChip(mode, _state.IsBorderVisible);
+        // Text that does not fit the card is trimmed with an ellipsis; the tooltip shows the full text.
+        StatusTitleText.ToolTip = StatusTitleText.Text;
+        BorderChipText.ToolTip = BorderChipText.Text;
         StatusDot.SetResourceReference(
             System.Windows.Shapes.Shape.FillProperty,
             mode == RegionMode.Specified ? "WarningBrush" : "KeycapBorderBrush");
@@ -112,6 +115,7 @@ public partial class ControlBarWindow : FluentWindow
         if (_state.CaptureRect is not { } rect)
         {
             StatusCoordinatesText.Text = "—";
+            StatusCoordinatesText.ToolTip = StatusCoordinatesText.Text;
             return;
         }
 
@@ -129,6 +133,7 @@ public partial class ControlBarWindow : FluentWindow
         }
 
         StatusCoordinatesText.Text = ControlBarText.Coordinates(mode, rect, monitorNumber);
+        StatusCoordinatesText.ToolTip = StatusCoordinatesText.Text;
     }
 
     // Every capture label (all modes, recording or not) is laid out invisibly in one cell, so the button width is
