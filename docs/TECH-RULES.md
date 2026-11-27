@@ -13,7 +13,7 @@ Windows 트레이 상주형 화면 캡처 도구.
 ## 기술 스택
 - **.NET 10 (LTS)**, C#, **WPF**
   - .NET 8은 2026-11 지원 종료이므로 사용하지 않는다.
-- UI: **WPF-UI (lepoco/wpfui)** — Windows 11 Fluent 디자인, Mica 배경, 시스템 라이트/다크 테마 자동 추종
+- UI: **WPF-UI (lepoco/wpfui)** — 컨트롤 기반으로 사용. 시스템 라이트/다크 테마 자동 추종. 색·배경은 SPEC 3장의 흰색/파랑 팔레트(Mica 사용 안 함)
 - 트레이: **H.NotifyIcon.Wpf**
 - MVVM: **CommunityToolkit.Mvvm**
 - DI/호스팅: **Microsoft.Extensions.Hosting**

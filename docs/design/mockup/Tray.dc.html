@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>WinCapture 트레이 메뉴</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#2F7CF6}a:hover{color:#1B64DA}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 640px; height: 440px; box-sizing: border-box; padding: 40px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; background: #D9DEE4; font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; font-size: 13px">
+
+  <div role="menu" aria-label="트레이 메뉴 라이트" style="align-self: start; background: #FFFFFF; color: #191F28; border: 1px solid #E5E8EB; border-radius: 10px; padding: 6px; display: flex; flex-direction: column; box-shadow: 0 8px 24px rgba(25,31,40,0.14)">
+    <button role="menuitem" style="height: 34px; border: 0; border-radius: 6px; background: #F2F4F6; color: #191F28; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 13px">영역 지정<span style="color: #6B7684; font-size: 12px">Ctrl+Alt+R</span></button>
+    <button role="menuitem" style="height: 34px; border: 0; border-radius: 6px; background: transparent; color: #191F28; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 13px">스크린샷<span style="color: #6B7684; font-size: 12px">Ctrl+Alt+S</span></button>
+    <button role="menuitem" style="height: 34px; border: 0; border-radius: 6px; background: transparent; color: #191F28; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 13px"><span style="display: flex; align-items: center; gap: 8px"><span style="width: 8px; height: 8px; border-radius: 4px; background: {{accent}}"></span>동영상 녹화 시작</span><span style="color: #6B7684; font-size: 12px">Ctrl+Alt+V</span></button>
+    <button role="menuitem" style="height: 34px; border: 0; border-radius: 6px; background: transparent; color: #191F28; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 13px">GIF 녹화 시작<span style="color: #6B7684; font-size: 12px">Ctrl+Alt+G</span></button>
+    <div role="separator" style="height: 1px; background: #E5E8EB; margin: 5px 6px"></div>
+    <button role="menuitem" style="height: 34px; border: 0; border-radius: 6px; background: transparent; color: #191F28; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 13px">창 표시<span style="color: #6B7684; font-size: 12px">Ctrl+Alt+W</span></button>
+    <button role="menuitem" style="height: 34px; border: 0; border-radius: 6px; background: transparent; color: #191F28; display: flex; align-items: center; padding: 0 10px; font-size: 13px">저장 폴더 열기</button>
+    <div role="separator" style="height: 1px; background: #E5E8EB; margin: 5px 6px"></div>
+    <button role="menuitem" style="height: 34px; border: 0; border-radius: 6px; background: transparent; color: #191F28; display: flex; align-items: center; padding: 0 10px; font-size: 13px">설정</button>
+    <button role="menuitem" style="height: 34px; border: 0; border-radius: 6px; background: transparent; color: #191F28; display: flex; align-items: center; padding: 0 10px; font-size: 13px">종료</button>
+  </div>
+
+  <div role="menu" aria-label="트레이 메뉴 다크 녹화 중" style="align-self: start; background: #17171C; color: #F9FAFB; border: 1px solid #2C2C35; border-radius: 10px; padding: 6px; display: flex; flex-direction: column; box-shadow: 0 8px 24px rgba(20,20,19,0.3)">
+    <button role="menuitem" aria-disabled="true" style="height: 34px; border: 0; border-radius: 6px; background: transparent; color: #6B7684; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 13px">영역 지정<span style="font-size: 12px">Ctrl+Alt+R</span></button>
+    <button role="menuitem" style="height: 34px; border: 0; border-radius: 6px; background: transparent; color: #F9FAFB; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 13px">스크린샷<span style="color: #A0A7B1; font-size: 12px">Ctrl+Alt+S</span></button>
+    <button role="menuitem" style="height: 34px; border: 0; border-radius: 6px; background: #1E2A40; color: #F9FAFB; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 13px"><span style="display: flex; align-items: center; gap: 8px"><span style="width: 8px; height: 8px; border-radius: 2px; background: {{accentDark}}"></span>녹화 정지 · 00:12</span><span style="color: #A0A7B1; font-size: 12px">Ctrl+Alt+V</span></button>
+    <button role="menuitem" aria-disabled="true" style="height: 34px; border: 0; border-radius: 6px; background: transparent; color: #6B7684; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 13px">GIF 녹화 시작<span style="font-size: 12px">Ctrl+Alt+G</span></button>
+    <div role="separator" style="height: 1px; background: #2C2C35; margin: 5px 6px"></div>
+    <button role="menuitem" style="height: 34px; border: 0; border-radius: 6px; background: transparent; color: #F9FAFB; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 13px">창 표시<span style="color: #A0A7B1; font-size: 12px">Ctrl+Alt+W</span></button>
+    <button role="menuitem" style="height: 34px; border: 0; border-radius: 6px; background: transparent; color: #F9FAFB; display: flex; align-items: center; padding: 0 10px; font-size: 13px">저장 폴더 열기</button>
+    <div role="separator" style="height: 1px; background: #2C2C35; margin: 5px 6px"></div>
+    <button role="menuitem" style="height: 34px; border: 0; border-radius: 6px; background: transparent; color: #F9FAFB; display: flex; align-items: center; padding: 0 10px; font-size: 13px">설정</button>
+    <button role="menuitem" style="height: 34px; border: 0; border-radius: 6px; background: transparent; color: #F9FAFB; display: flex; align-items: center; padding: 0 10px; font-size: 13px">종료</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#2F7CF6"},"accentDark":{"editor":"color","default":"#4D8EF7"},"$preview":{"width":640,"height":440}}'>
+class Component extends DCLogic {
+renderVals() {
+return { accent: this.props.accent ?? '#2F7CF6', accentDark: this.props.accentDark ?? '#4D8EF7' };
+}
+}
+</script>
+</body>
+</html>
