@@ -8,8 +8,8 @@ namespace WinCapture.Core.Settings;
 /// </summary>
 public static class CaptureAvailability
 {
-    // Screenshot (session 3), video (session 4) and GIF (session 5) are not implemented yet.
-    private static readonly HashSet<CaptureMode> Implemented = new();
+    // Screenshot ships in session 3; video (session 4) and GIF (session 5) are not implemented yet.
+    private static readonly HashSet<CaptureMode> Implemented = new() { CaptureMode.Screenshot };
 
     public static bool IsImplemented(CaptureMode mode) => Implemented.Contains(mode);
 
@@ -22,12 +22,10 @@ public static class CaptureAvailability
     };
 
     /// <summary>User-facing tooltip text for the [Capture] button.</summary>
-    public static string Tooltip(CaptureMode mode) => IsImplemented(mode)
-        ? "선택한 모드로 캡처합니다"
-        : mode switch
-        {
-            CaptureMode.Video => "동영상 녹화 기능은 준비 중입니다",
-            CaptureMode.Gif => "GIF 녹화 기능은 준비 중입니다",
-            _ => "스크린샷 기능은 준비 중입니다",
-        };
+    public static string Tooltip(CaptureMode mode) => mode switch
+    {
+        CaptureMode.Video => "동영상 녹화 기능은 준비 중입니다",
+        CaptureMode.Gif => "GIF 녹화 기능은 준비 중입니다",
+        _ => "현재 영역을 스크린샷으로 저장합니다",
+    };
 }

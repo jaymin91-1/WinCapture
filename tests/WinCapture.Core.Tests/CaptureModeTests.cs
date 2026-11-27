@@ -45,7 +45,7 @@ public sealed class CaptureModeTests : IDisposable
     [InlineData("{\"captureMode\":42}")]
     [InlineData("{\"captureMode\":null}")]
     [InlineData("{\"captureMode\":{\"a\":1}}")]
-    [InlineData("{\"autoHideAppWindow\":false}")]
+    [InlineData("{\"autoHideAppWindow\":false,\"reshowAppWindowAfterRecording\":true}")]
     public void Unknown_value_or_missing_key_restores_Screenshot(string json)
     {
         WriteRaw(json);
@@ -57,7 +57,20 @@ public sealed class CaptureModeTests : IDisposable
     [Fact]
     public void Other_settings_survive_an_unknown_captureMode()
     {
-        WriteRaw("{\"captureMode\":\"Banana\",\"autoHideAppWindow\":false}");
-        new JsonSettingsStore(SettingsPath).Load().AutoHideAppWindow.Should().BeFalse();
+        WriteRaw("{\"captureMode\":\"Banana\",\"saveFolder\":\"D:\\\\Shots\"}");
+        new JsonSettingsStore(SettingsPath).Load().SaveFolder.Should().Be("D:\\Shots");
+    }
+
+    [Fact]
+    public void Removed_auto_hide_keys_in_an_old_file_are_ignored_without_warnings()
+    {
+        WriteRaw("{\"captureMode\":\"Gif\",\"saveFolder\":\"D:\\\\Shots\",\"autoHideAppWindow\":true,\"reshowAppWindowAfterRecording\":true}");
+        var logs = new List<string>();
+        var loaded = new JsonSettingsStore(SettingsPath, log: (m, _) => logs.Add(m)).Load();
+
+        loaded.CaptureMode.Should().Be(CaptureMode.Gif);
+        loaded.SaveFolder.Should().Be("D:\\Shots");
+        logs.Should().BeEmpty();
+        Directory.GetFiles(_dir).Should().ContainSingle(); // not treated as corrupt
     }
 }

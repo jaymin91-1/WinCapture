@@ -1,5 +1,4 @@
 using FluentAssertions;
-using WinCapture.Core.Geometry;
 using WinCapture.Core.Hotkeys;
 using WinCapture.Core.Settings;
 
@@ -30,29 +29,5 @@ public class HotkeyPlanTests
         plan.Rejected[HotkeyAction.Screenshot].Should().Be(HotkeyStatus.Conflict);
         plan.Rejected[HotkeyAction.RecordGif].Should().Be(HotkeyStatus.Conflict);
         plan.ToRegister.Should().HaveCount(5);
-    }
-}
-
-public class AppWindowPolicyTests
-{
-    private static readonly Rect Region = new(100, 100, 400, 300);
-
-    [Fact]
-    public void Overlapping_AutoHideOn_Hides() =>
-        AppWindowPolicy.ShouldAutoHide(true, true, new Rect(450, 350, 300, 300), Region).Should().BeTrue();
-
-    [Fact]
-    public void Overlapping_AutoHideOff_DoesNotHide() =>
-        AppWindowPolicy.ShouldAutoHide(false, true, new Rect(450, 350, 300, 300), Region).Should().BeFalse();
-
-    [Fact]
-    public void NotOverlapping_DoesNotHide() =>
-        AppWindowPolicy.ShouldAutoHide(true, true, new Rect(600, 100, 300, 300), Region).Should().BeFalse();
-
-    [Fact]
-    public void HiddenWindowOrNoRegion_DoesNotHide()
-    {
-        AppWindowPolicy.ShouldAutoHide(true, false, new Rect(450, 350, 300, 300), Region).Should().BeFalse();
-        AppWindowPolicy.ShouldAutoHide(true, true, new Rect(450, 350, 300, 300), null).Should().BeFalse();
     }
 }

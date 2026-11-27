@@ -15,6 +15,13 @@ public class CaptureAvailabilityTests
     }
 
     [Theory]
+    [InlineData(CaptureMode.Screenshot, true)]
+    [InlineData(CaptureMode.Video, false)]
+    [InlineData(CaptureMode.Gif, false)]
+    public void Only_screenshot_is_implemented(CaptureMode mode, bool expected) =>
+        CaptureAvailability.IsImplemented(mode).Should().Be(expected);
+
+    [Theory]
     [InlineData(CaptureMode.Screenshot)]
     [InlineData(CaptureMode.Video)]
     [InlineData(CaptureMode.Gif)]

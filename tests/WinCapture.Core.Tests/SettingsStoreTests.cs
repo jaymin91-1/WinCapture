@@ -50,8 +50,6 @@ public sealed class SettingsStoreTests : IDisposable
         s.Border.Thickness.Should().Be(2);
         s.Capture.IncludeCursor.Should().BeTrue();
         s.Capture.CopyToClipboard.Should().BeFalse();
-        s.AutoHideAppWindow.Should().BeTrue();
-        s.ReshowAppWindowAfterRecording.Should().BeFalse();
         s.Recording.Fps.Should().Be(30);
         s.Recording.Preset.Should().Be("Standard");
         s.Recording.MaxDurationSeconds.Should().Be(0);
@@ -87,8 +85,6 @@ public sealed class SettingsStoreTests : IDisposable
             Hotkeys = new HotkeySettings { SelectRegion = "Ctrl+Shift+1", ToggleAppWindow = "Alt+F9" },
             Border = new BorderSettings { Color = "#00FF00", Thickness = 4 },
             Capture = new CaptureSettings { IncludeCursor = false, CopyToClipboard = true },
-            AutoHideAppWindow = false,
-            ReshowAppWindowAfterRecording = true,
             Recording = new RecordingSettings { Fps = 60, Preset = "HighQuality", MaxDurationSeconds = 120 },
             Gif = new GifSettings { Fps = 20, MaxWidth = 400 },
             FfmpegPath = "C:\\tools\\ffmpeg.exe",

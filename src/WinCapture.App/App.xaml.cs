@@ -6,6 +6,7 @@ using H.NotifyIcon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using WinCapture.App.Capture;
 using WinCapture.App.Overlay;
 using WinCapture.Core.Geometry;
 using WinCapture.App.Pages;
@@ -82,6 +83,8 @@ public partial class App : Application
                     sp.GetRequiredService<RegionState>(),
                     sp.GetRequiredService<IScreenInfo>(),
                     (message, ex) => Log.Warning(ex, "{Message}", message)));
+                services.AddSingleton<WinCapture.Core.Storage.ISaveFileSystem, WinCapture.App.Capture.SaveFileSystem>();
+                services.AddSingleton<WinCapture.App.Capture.ScreenshotWorkflow>();
                 services.AddSingleton<SelectionController>();
                 services.AddSingleton<BorderController>();
             })
@@ -150,7 +153,9 @@ public partial class App : Application
         var selectItem = CreateMenuItem("영역 지정", "Ctrl+Alt+R", enabled: true);
         selectItem.Click += (_, _) => OnHotkey(HotkeyAction.SelectRegion);
         menu.Items.Add(selectItem);
-        menu.Items.Add(CreateMenuItem("스크린샷", "Ctrl+Alt+S", enabled: false));
+        var screenshotItem = CreateMenuItem("스크린샷", "Ctrl+Alt+S", enabled: CaptureAvailability.IsImplemented(CaptureMode.Screenshot));
+        screenshotItem.Click += (_, _) => OnHotkey(HotkeyAction.Screenshot);
+        menu.Items.Add(screenshotItem);
         menu.Items.Add(CreateMenuItem("동영상 녹화 시작/정지", "Ctrl+Alt+V", enabled: false));
         menu.Items.Add(CreateMenuItem("GIF 녹화 시작/정지", "Ctrl+Alt+G", enabled: false));
         menu.Items.Add(CreateSeparator());
@@ -242,8 +247,13 @@ public partial class App : Application
             case HotkeyAction.ToggleAppWindow:
                 ToggleAppWindow();
                 break;
+            case HotkeyAction.Screenshot:
+                // Single screenshot path for the hotkey, the tray item and the control bar [Capture] button.
+                // RunAsync handles its own errors and ignores overlapping calls.
+                _ = services.GetRequiredService<ScreenshotWorkflow>().RunAsync();
+                break;
             default:
-                // Screenshot / RecordVideo / RecordGif: registered only; implemented in later sessions.
+                // RecordVideo / RecordGif: registered only; implemented in later sessions.
                 Log.Information("Hotkey {Action} pressed (not implemented yet)", action);
                 break;
         }
@@ -275,40 +285,6 @@ public partial class App : Application
         {
             ShowControlBar();
         }
-    }
-
-    /// <summary>
-    /// Hides the app windows (settings window and control bar) that overlap the region when autoHideAppWindow
-    /// is on (F-08-3). Screenshot/recording start (sessions 3-5) calls this before capturing. Returns true when
-    /// at least one window was hidden.
-    /// </summary>
-    internal bool HideAppWindowIfOverlapping()
-    {
-        if (_host is null)
-        {
-            return false;
-        }
-
-        var autoHide = _host.Services.GetRequiredService<ISettingsStore>().Load().AutoHideAppWindow;
-        var region = _host.Services.GetRequiredService<RegionState>().CaptureRect;
-        var hidAny = false;
-        foreach (var window in new Window?[] { _settingsWindow, _controlBar })
-        {
-            if (window is not { IsVisible: true })
-            {
-                continue;
-            }
-
-            var bounds = WinCapture.Native.Interop.WindowInterop.GetWindowBounds(
-                new System.Windows.Interop.WindowInteropHelper(window).Handle);
-            if (AppWindowPolicy.ShouldAutoHide(autoHide, window.IsVisible, bounds, region))
-            {
-                window.Hide();
-                hidAny = true;
-            }
-        }
-
-        return hidAny;
     }
 
     private void CreateControlBar(CaptureMode initialMode)
