@@ -11,7 +11,7 @@ namespace WinCapture.App;
 /// <summary>
 /// Small always-available control bar. It is a normal app window (taskbar visible, not capture-excluded,
 /// not an OverlayWindowBase): it is not part of the capture overlay set, and the auto-hide rule handles
-/// keeping it out of captures. Fixed size: SizeToContent + ResizeMode=CanMinimize (no resize, no maximize).
+/// keeping it out of captures. Fixed size: SizeToContent + ResizeMode=CanMinimize + FixedSizeWindow (no resize, no maximize).
 /// </summary>
 public partial class ControlBarWindow : FluentWindow
 {
@@ -27,6 +27,7 @@ public partial class ControlBarWindow : FluentWindow
         _screen = screen;
         AppWindowIcon.Attach(this);
         InitializeComponent();
+        FixedSizeWindow.Attach(this);
 
         Mode = initialMode;
         (initialMode switch

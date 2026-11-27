@@ -11,7 +11,8 @@
                  WindowBackdropType="None"
                  Background="{DynamicResource WindowBackgroundBrush}"
                  ExtendsContentIntoTitleBar="True">
-    <!-- Read-only list: no editing controls. Rows come from Core HotkeyRows. -->
+    <!-- Read-only list: no editing controls. Rows come from Core HotkeyRows. Width 400 DIP, height follows content,
+         outer margin 12 DIP. Resize/maximize lock: ResizeMode=NoResize + FixedSizeWindow (code-behind). -->
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -21,13 +22,13 @@
         <ui:TitleBar x:Name="TitleBar" Grid.Row="0" Title="단축키"
                      Background="{DynamicResource TitleBarBrush}"
                      Foreground="{DynamicResource TextPrimaryBrush}"
-                     ShowMaximize="False" ShowMinimize="False">
+                     ShowMaximize="False" ShowMinimize="False" CanMaximize="False">
             <ui:TitleBar.Icon>
                 <ui:ImageIcon Source="pack://application:,,,/Assets/AppIcon.ico" />
             </ui:TitleBar.Icon>
         </ui:TitleBar>
 
-        <StackPanel Grid.Row="1" Margin="14,10,14,14">
+        <StackPanel Grid.Row="1" Margin="12">
             <TextBlock Text="단축키" FontFamily="{StaticResource AppFontFamily}" FontSize="17" FontWeight="Bold"
                        Foreground="{DynamicResource TextPrimaryBrush}" />
             <TextBlock Text="현재 설정된 전역 단축키입니다." Margin="0,2,0,12" FontFamily="{StaticResource AppFontFamily}"
@@ -91,7 +92,7 @@
                 </ItemsControl>
             </Border>
 
-            <Grid Margin="0,14,0,0">
+            <Grid Margin="0,12,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />

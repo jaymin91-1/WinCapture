@@ -12,7 +12,10 @@
                  WindowBackdropType="None"
                  Background="{DynamicResource WindowBackgroundBrush}"
                  ExtendsContentIntoTitleBar="True">
-    <!-- Fixed size: SizeToContent once, ResizeMode=CanMinimize (no resize, no maximize button); content width is fixed at 320. -->
+    <!-- Size: SizeToContent=WidthAndHeight follows this single root container. Its only fixed value is the 320 DIP width
+         (design width of the mockup); height is the sum of the rows. Every outer margin is 12 DIP.
+         Resize/maximize lock: ResizeMode=CanMinimize (keeps the minimize button), TitleBar CanMaximize=False and the
+         FixedSizeWindow helper (code-behind), see FixedSizeWindow.cs. -->
     <Grid Width="320">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -24,7 +27,7 @@
         <ui:TitleBar x:Name="TitleBar" Grid.Row="0" Title="WinCapture"
                      Background="{DynamicResource TitleBarBrush}"
                      Foreground="{DynamicResource TextPrimaryBrush}"
-                     ShowMaximize="False">
+                     ShowMaximize="False" CanMaximize="False">
             <ui:TitleBar.Icon>
                 <ui:ImageIcon Source="pack://application:,,,/Assets/AppIcon.ico" />
             </ui:TitleBar.Icon>
@@ -32,7 +35,7 @@
 
         <!-- Row 1: menu bar [Settings] [Hotkeys] [Hide window] -->
         <Border Grid.Row="1" Background="{DynamicResource TitleBarBrush}"
-                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="10,0,10,6">
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="12,0,12,6">
             <StackPanel x:Name="MenuBar" Orientation="Horizontal">
                 <Button x:Name="MenuSettingsButton" Content="설정" Style="{StaticResource MenuBarItemStyle}" Click="OnSettingsClick" />
                 <Button x:Name="MenuHotkeysButton" Content="단축키" Style="{StaticResource MenuBarItemStyle}" Click="OnHotkeysClick" />
@@ -40,7 +43,7 @@
             </StackPanel>
         </Border>
 
-        <StackPanel Grid.Row="2" Margin="14,14,14,14">
+        <StackPanel Grid.Row="2" Margin="12">
             <!-- Status card: region state + coordinates, border chip on the right -->
             <Border x:Name="StatusCard" Style="{StaticResource CardStyle}" Padding="14,10">
                 <Grid>
@@ -86,7 +89,7 @@
             </UniformGrid>
 
             <!-- Big accent [Capture] button -->
-            <Button x:Name="CaptureButton" Style="{StaticResource PrimaryButtonStyle}" Margin="0,10,0,0"
+            <Button x:Name="CaptureButton" Style="{StaticResource PrimaryButtonStyle}" Margin="0,12,0,0"
                     ToolTipService.ShowOnDisabled="True" Click="OnCaptureClick">
                 <StackPanel Orientation="Horizontal">
                     <controls:PathIcon Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center"

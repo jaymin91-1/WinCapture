@@ -130,4 +130,32 @@ public static partial class NativeMethods
 
     [LibraryImport("user32.dll")]
     public static partial int GetSystemMetricsForDpi(int index, uint dpi);
+
+    // Fixed-size window support (control bar, hotkey popup).
+    public const int GWL_STYLE = -16;
+    public const long WS_THICKFRAME = 0x00040000;
+    public const long WS_MAXIMIZEBOX = 0x00010000;
+    public const int WM_GETMINMAXINFO = 0x0024;
+    public const int WM_SYSCOMMAND = 0x0112;
+    public const int WM_NCLBUTTONDBLCLK = 0x00A3;
+    public const uint SC_SIZE = 0xF000;
+    public const uint SC_MAXIMIZE = 0xF030;
+    public const uint MF_BYCOMMAND = 0x0;
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct MINMAXINFO
+    {
+        public POINT ptReserved;
+        public POINT ptMaxSize;
+        public POINT ptMaxPosition;
+        public POINT ptMinTrackSize;
+        public POINT ptMaxTrackSize;
+    }
+
+    [LibraryImport("user32.dll")]
+    public static partial IntPtr GetSystemMenu(IntPtr hwnd, [MarshalAs(UnmanagedType.Bool)] bool revert);
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool DeleteMenu(IntPtr menu, uint position, uint flags);
 }

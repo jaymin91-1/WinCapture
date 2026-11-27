@@ -51,4 +51,38 @@ public static class WindowInterop
     /// <summary>Window bounds in virtual screen physical pixels, or null on failure.</summary>
     public static Rect? GetWindowBounds(IntPtr hwnd) =>
         NativeMethods.GetWindowRect(hwnd, out var r) ? new Rect(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top) : null;
+
+    /// <summary>Removes WS_THICKFRAME and WS_MAXIMIZEBOX: no sizing border, no maximize, no Aero Snap / Win+Up.</summary>
+    public static void RemoveSizingStyles(IntPtr hwnd)
+    {
+        long current = NativeMethods.GetWindowLongPtr(hwnd, NativeMethods.GWL_STYLE);
+        long wanted = current & ~(NativeMethods.WS_THICKFRAME | NativeMethods.WS_MAXIMIZEBOX);
+        if (wanted != current)
+        {
+            NativeMethods.SetWindowLongPtr(hwnd, NativeMethods.GWL_STYLE, (nint)wanted);
+        }
+    }
+
+    /// <summary>Deletes Size and Maximize from the system menu (Alt+Space, title bar right click).</summary>
+    public static void RemoveSizeMenuItems(IntPtr hwnd)
+    {
+        var menu = NativeMethods.GetSystemMenu(hwnd, false);
+        if (menu == IntPtr.Zero)
+        {
+            return;
+        }
+
+        NativeMethods.DeleteMenu(menu, NativeMethods.SC_SIZE, NativeMethods.MF_BYCOMMAND);
+        NativeMethods.DeleteMenu(menu, NativeMethods.SC_MAXIMIZE, NativeMethods.MF_BYCOMMAND);
+    }
+
+    /// <summary>Writes min = max track size (and max size) into the MINMAXINFO that lParam points to.</summary>
+    public static void PinMinMaxInfo(IntPtr lParam, int width, int height)
+    {
+        var info = System.Runtime.InteropServices.Marshal.PtrToStructure<NativeMethods.MINMAXINFO>(lParam);
+        info.ptMinTrackSize = new NativeMethods.POINT { X = width, Y = height };
+        info.ptMaxTrackSize = new NativeMethods.POINT { X = width, Y = height };
+        info.ptMaxSize = new NativeMethods.POINT { X = width, Y = height };
+        System.Runtime.InteropServices.Marshal.StructureToPtr(info, lParam, false);
+    }
 }

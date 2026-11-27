@@ -14,6 +14,7 @@ public partial class HotkeyPopupWindow : FluentWindow
     {
         AppWindowIcon.Attach(this);
         InitializeComponent();
+        FixedSizeWindow.Attach(this);
         RowsList.ItemsSource = rows;
     }
 
