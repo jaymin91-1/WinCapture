@@ -106,7 +106,8 @@ public partial class App : Application
         _hotkeys = new HotkeyService(
             _host.Services.GetRequiredService<ISettingsStore>(),
             OnHotkey,
-            (title, message) => _trayIcon?.ShowNotification(title, message, H.NotifyIcon.Core.NotificationIcon.Warning));
+            (title, message) => _host.Services.GetRequiredService<WinCapture.App.Toast.IToastService>()
+                .Show(WinCapture.Core.Presentation.ToastKind.Warning, title, message));
         _hotkeys.Reapply();
 
         CreateControlBar(settings.CaptureMode);

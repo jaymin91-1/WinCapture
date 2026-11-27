@@ -23,27 +23,6 @@ public static class ScreenshotService
     public static Task<ScreenshotResult> CaptureAsync(Rect region, bool includeCursor) =>
         Task.Run(() => Capture(region, includeCursor));
 
-    /// <summary>Same as <see cref="CaptureAsync"/> but also writes the PNG to <paramref name="path"/>.</summary>
-    public static async Task<ScreenshotResult> CaptureToFileAsync(Rect region, bool includeCursor, string path)
-    {
-        var result = await CaptureAsync(region, includeCursor).ConfigureAwait(false);
-        if (!result.Success)
-        {
-            return result;
-        }
-
-        try
-        {
-            await File.WriteAllBytesAsync(path, result.Png!).ConfigureAwait(false);
-            return result;
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Failed to write screenshot to {Path}", path);
-            return result with { Png = null, Error = ex.Message };
-        }
-    }
-
     private static ScreenshotResult Capture(Rect region, bool includeCursor)
     {
         var area = CapturePlan.Clip(region, ScreenCapturer.GetVirtualScreen());

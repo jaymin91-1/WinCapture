@@ -1,6 +1,7 @@
 using System.Windows.Interop;
 using Serilog;
 using WinCapture.Core.Hotkeys;
+using WinCapture.Core.Presentation;
 using WinCapture.Core.Settings;
 using WinCapture.Native.Interop;
 
@@ -74,8 +75,8 @@ public sealed class HotkeyService : IDisposable
         var failed = statuses.Where(p => p.Value != HotkeyStatus.Registered).Select(p => p.Key).OrderBy(a => a).ToList();
         if (failed.Count > 0)
         {
-            _notifyUser("단축키 등록 실패",
-                $"{string.Join(", ", failed)} 단축키를 등록하지 못했습니다. 설정의 단축키 탭에서 변경해 주세요.");
+            // One grouped message for all failed actions (also on Reapply after a settings change).
+            _notifyUser(HotkeyFailureMessage.Title, HotkeyFailureMessage.Build(failed)!);
         }
     }
 

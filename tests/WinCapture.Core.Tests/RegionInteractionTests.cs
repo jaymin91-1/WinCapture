@@ -64,13 +64,6 @@ public class RegionInteractionTests
         RegionInteraction.Resize(Region, 50, 50, Virtual, true).Should().Be(Region);
     }
 
-    [Theory]
-    [InlineData(0, 0, 500, 500, true)]
-    [InlineData(0, 0, 300, 300, false)]
-    [InlineData(0, 0, 400, 400, false)]
-    public void Overlaps_SpecExamples(int x, int y, int w, int h, bool expected) =>
-        RegionInteraction.Overlaps(new Rect(x, y, w, h), new Rect(400, 400, 200, 200)).Should().Be(expected);
-
     [Fact]
     public void FormatTooltip_UsesInvariantFormat()
     {

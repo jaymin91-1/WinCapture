@@ -79,9 +79,6 @@ public static class RegionInteraction
         };
     }
 
-    /// <summary>True when the window and region share area (touching edges do not count).</summary>
-    public static bool Overlaps(Rect window, Rect region) => window.Intersects(region);
-
     /// <summary>Formats a drag tooltip as "X, Y, W × H" (culture independent).</summary>
     public static string FormatTooltip(Rect r) =>
         string.Create(CultureInfo.InvariantCulture, $"{r.X}, {r.Y}, {r.Width} × {r.Height}");
