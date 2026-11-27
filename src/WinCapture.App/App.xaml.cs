@@ -65,6 +65,11 @@ public partial class App : Application
                         }
                     }));
                 services.AddSingleton<RegionState>();
+                services.AddSingleton(sp => new RegionCoordinator(
+                    sp.GetRequiredService<RegionState>(),
+                    sp.GetRequiredService<ISettingsStore>(),
+                    (message, ex) => Log.Warning(ex, "{Message}", message)));
+                services.AddSingleton<SelectionController>();
                 services.AddSingleton<BorderController>();
             })
             .Build();
@@ -75,6 +80,16 @@ public partial class App : Application
 
         // Creating the controller wires RegionState to the border window (hotkeys connect in later tasks).
         _host.Services.GetRequiredService<BorderController>();
+
+        // Restore the last region (corrected into the virtual screen) and show its border.
+        try
+        {
+            _host.Services.GetRequiredService<RegionCoordinator>().Restore(WinCapture.Native.Interop.WindowInterop.GetVirtualScreen());
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Restoring last region failed");
+        }
 
         AppTheme.Initialize();
         CreateTrayIcon();
@@ -115,7 +130,9 @@ public partial class App : Application
 
         // Order follows SPEC section 4; shortcut text shows SPEC section 7 defaults.
         // Unimplemented items are disabled placeholders.
-        menu.Items.Add(CreateMenuItem("영역 지정", "Ctrl+Alt+R", enabled: false));
+        var selectItem = CreateMenuItem("영역 지정", "Ctrl+Alt+R", enabled: true);
+        selectItem.Click += (_, _) => _host?.Services.GetRequiredService<SelectionController>().BeginSelection();
+        menu.Items.Add(selectItem);
         menu.Items.Add(CreateMenuItem("스크린샷", "Ctrl+Alt+S", enabled: false));
         menu.Items.Add(CreateMenuItem("동영상 녹화 시작/정지", "Ctrl+Alt+V", enabled: false));
         menu.Items.Add(CreateMenuItem("GIF 녹화 시작/정지", "Ctrl+Alt+G", enabled: false));

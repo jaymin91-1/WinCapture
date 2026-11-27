@@ -15,16 +15,24 @@ namespace WinCapture.App.Overlay;
 /// </summary>
 public abstract class OverlayWindowBase : Window
 {
-    protected OverlayWindowBase()
+    private readonly bool _allowActivation;
+
+    /// <param name="allowActivation">
+    /// Exception for windows that must receive keyboard input (the selection overlay needs Esc).
+    /// When true, WS_EX_NOACTIVATE is not applied and the window can be activated. Capture exclusion,
+    /// LAYERED, TOOLWINDOW and Topmost are always applied. Default false (never takes focus).
+    /// </param>
+    protected OverlayWindowBase(bool allowActivation = false)
     {
+        _allowActivation = allowActivation;
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
         AllowsTransparency = true;
         Background = Brushes.Transparent;
         ShowInTaskbar = false;
-        ShowActivated = false;
+        ShowActivated = allowActivation;
         Topmost = true;
-        Focusable = false;
+        Focusable = allowActivation;
 
         SourceInitialized += OnSourceInitialized;
     }
@@ -47,7 +55,8 @@ public abstract class OverlayWindowBase : Window
 
         WindowInterop.AddExtendedStyles(
             hwnd,
-            NativeMethods.WS_EX_LAYERED | NativeMethods.WS_EX_TOOLWINDOW | NativeMethods.WS_EX_NOACTIVATE);
+            NativeMethods.WS_EX_LAYERED | NativeMethods.WS_EX_TOOLWINDOW |
+            (_allowActivation ? 0 : NativeMethods.WS_EX_NOACTIVATE));
 
         HwndSource.FromHwnd(hwnd)?.AddHook(WndProc);
     }
@@ -66,7 +75,7 @@ public abstract class OverlayWindowBase : Window
     {
         switch (msg)
         {
-            case NativeMethods.WM_MOUSEACTIVATE:
+            case NativeMethods.WM_MOUSEACTIVATE when !_allowActivation:
                 // Never take focus when clicked.
                 handled = true;
                 return new IntPtr(NativeMethods.MA_NOACTIVATE);
