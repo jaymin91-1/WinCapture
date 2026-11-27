@@ -38,4 +38,18 @@ public static class MonitorSelector
 
         return monitors.Count > 0 ? monitors[0] : null;
     }
+
+    /// <summary>1-based number of the monitor whose full rectangle equals <paramref name="rect"/> (list order), or null.</summary>
+    public static int? MonitorNumber(IReadOnlyList<Rect> monitors, Rect rect)
+    {
+        for (var i = 0; i < monitors.Count; i++)
+        {
+            if (monitors[i] == rect)
+            {
+                return i + 1;
+            }
+        }
+
+        return null;
+    }
 }

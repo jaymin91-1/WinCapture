@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Generates src/WinCapture.App/Assets/AppIcon.ico from scratch (original artwork, no external images).
 
+Frames below 256 px are stored as classic BMP/DIB, the 256 px frame as PNG (conventional, widest compatibility).
 Design: accent blue (#2F7CF6) rounded square, four white corner brackets (a viewfinder) and a white center dot.
 Same family as the tray icon (blue rounded square + white dot). Pure Python standard library only.
 Usage: python3 scripts/generate-app-icon.py
@@ -81,8 +82,21 @@ def png(size, rows):
             + chunk(b"IEND", b""))
 
 
+def dib(size, rows):
+    """Classic ICO image: BITMAPINFOHEADER (height doubled) + bottom-up BGRA pixels + 1bpp AND mask (all zero)."""
+    header = struct.pack("<IiiHHIIiiII", 40, size, size * 2, 1, 32, 0, 0, 0, 0, 0, 0)
+    pixels = bytearray()
+    for row in reversed(rows):
+        for x in range(size):
+            r, g, b, a = row[x * 4:x * 4 + 4]
+            pixels += bytes((b, g, r, a))
+    mask_row = ((size + 31) // 32) * 4
+    return header + bytes(pixels) + bytes(mask_row * size)
+
+
 def main():
-    images = [(s, png(s, render(s))) for s in SIZES]
+    # Frames up to 128 px are classic DIB (most compatible with the Windows loader and WPF); 256 px is PNG.
+    images = [(s, png(s, render(s)) if s >= 256 else dib(s, render(s))) for s in SIZES]
     header = struct.pack("<HHH", 0, 1, len(images))
     offset = 6 + 16 * len(images)
     entries, blobs = b"", b""

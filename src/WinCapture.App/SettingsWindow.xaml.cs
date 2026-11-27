@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Windows;
-using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 using WinCapture.App.Pages;
 
@@ -9,12 +8,12 @@ namespace WinCapture.App;
 public partial class SettingsWindow : FluentWindow
 {
     private bool _allowClose;
+    private Type? _pendingPage;
 
     public SettingsWindow()
     {
-        // Follow the system light/dark theme, including live changes.
-        // Solid background (no Mica) and the app's own accent: WPF-UI accent updates are disabled.
-        SystemThemeWatcher.Watch(this, WindowBackdropType.None, updateAccents: false);
+        // The theme is fixed to light (AppTheme); the system theme is not followed.
+        AppWindowIcon.Attach(this);
         InitializeComponent();
     }
 
@@ -34,8 +33,22 @@ public partial class SettingsWindow : FluentWindow
         base.OnClosing(e);
     }
 
+    /// <summary>Selects a settings tab (page type). Before the first load the choice is applied when the window loads.</summary>
+    public void SelectPage(Type pageType)
+    {
+        if (IsLoaded)
+        {
+            RootNavigation.Navigate(pageType);
+        }
+        else
+        {
+            _pendingPage = pageType;
+        }
+    }
+
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        RootNavigation.Navigate(typeof(GeneralPage));
+        RootNavigation.Navigate(_pendingPage ?? typeof(GeneralPage));
+        _pendingPage = null;
     }
 }

@@ -8,7 +8,9 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using WinCapture.App.Overlay;
 using WinCapture.Core.Geometry;
+using WinCapture.App.Pages;
 using WinCapture.Core.Hotkeys;
+using WinCapture.Core.Presentation;
 using WinCapture.Core.Settings;
 
 namespace WinCapture.App;
@@ -24,6 +26,7 @@ public partial class App : Application
     private bool _restoreSettingsWindow;
     private bool _restoreControlBar;
     private HotkeyService? _hotkeys;
+    private HotkeyPopupWindow? _hotkeyPopup;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -102,7 +105,7 @@ public partial class App : Application
         _hotkeys.Reapply();
 
         CreateControlBar(settings.CaptureMode);
-        _guard.StartListening(() => Dispatcher.BeginInvoke(ShowSettingsWindow));
+        _guard.StartListening(() => Dispatcher.BeginInvoke(() => ShowSettingsWindow()));
     }
 
     protected override void OnExit(ExitEventArgs e)
@@ -308,8 +311,13 @@ public partial class App : Application
 
     private void CreateControlBar(CaptureMode initialMode)
     {
-        _controlBar = new ControlBarWindow(initialMode);
+        var services = _host!.Services;
+        _controlBar = new ControlBarWindow(
+            initialMode, services.GetRequiredService<RegionState>(), services.GetRequiredService<IScreenInfo>());
         _controlBar.SelectRegionRequested += (_, _) => OnHotkey(HotkeyAction.SelectRegion);
+        // Same path as the ClearRegion hotkey (RegionCoordinator.Clear).
+        _controlBar.ClearRegionRequested += (_, _) => OnHotkey(HotkeyAction.ClearRegion);
+        _controlBar.HotkeysRequested += (_, _) => ShowHotkeyPopup();
         // Same path as the hotkey / tray item for the mode; not enabled until the mode is implemented.
         _controlBar.CaptureRequested += (_, mode) => OnHotkey(CaptureAvailability.ActionFor(mode));
         _controlBar.SettingsRequested += (_, _) => ShowSettingsWindow();
@@ -354,11 +362,39 @@ public partial class App : Application
         _controlBar.Activate();
     }
 
-    // Single path for showing the settings window (tray menu and second-instance signal).
-    private void ShowSettingsWindow()
+    // Opens the read-only hotkey popup above the control bar with the current settings and registration results.
+    private void ShowHotkeyPopup()
+    {
+        if (_hotkeyPopup is not null)
+        {
+            _hotkeyPopup.Activate();
+            return;
+        }
+
+        var settings = _host!.Services.GetRequiredService<ISettingsStore>().Load();
+        var failed = _hotkeys is null ? new HashSet<HotkeyAction>() : HotkeyRows.FailedActions(_hotkeys.Statuses);
+        var popup = new HotkeyPopupWindow(HotkeyRows.Build(settings.Hotkeys, failed));
+        if (_controlBar is { IsVisible: true })
+        {
+            popup.Owner = _controlBar;
+        }
+
+        popup.OpenSettingsRequested += (_, _) => ShowSettingsWindow(typeof(HotkeysPage));
+        popup.Closed += (_, _) => _hotkeyPopup = null;
+        _hotkeyPopup = popup;
+        popup.Show();
+    }
+
+    // Single path for showing the settings window (control bar menu, tray menu, second-instance signal, hotkey popup).
+    // pageType selects a tab (the hotkey tab for the popup); null keeps the current / first tab.
+    private void ShowSettingsWindow(Type? pageType = null)
     {
         // The window is created once and hidden (not closed) when the user clicks X.
         _settingsWindow ??= new SettingsWindow();
+        if (pageType is not null)
+        {
+            _settingsWindow.SelectPage(pageType);
+        }
 
         if (!_settingsWindow.IsVisible)
         {

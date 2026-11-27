@@ -108,4 +108,26 @@ public static partial class NativeMethods
     [LibraryImport("user32.dll", EntryPoint = "GetMonitorInfoW", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool GetMonitorInfo(IntPtr monitor, ref MONITORINFO info);
+
+    public const uint WM_SETICON = 0x0080;
+    public const int ICON_SMALL = 0;
+    public const int ICON_BIG = 1;
+    public const int SM_CXICON = 11;
+    public const int SM_CXSMICON = 49;
+    public const uint LR_DEFAULTCOLOR = 0;
+    public const uint ICON_RESOURCE_VERSION = 0x00030000;
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    public static partial IntPtr CreateIconFromResourceEx(
+        byte[] bits, uint size, [MarshalAs(UnmanagedType.Bool)] bool isIcon, uint version, int cx, int cy, uint flags);
+
+    [LibraryImport("user32.dll", EntryPoint = "SendMessageW")]
+    public static partial IntPtr SendMessage(IntPtr hwnd, uint message, IntPtr wParam, IntPtr lParam);
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool DestroyIcon(IntPtr icon);
+
+    [LibraryImport("user32.dll")]
+    public static partial int GetSystemMetricsForDpi(int index, uint dpi);
 }
