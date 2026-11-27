@@ -6,5 +6,6 @@
 ## 세션 1 (상태: 진행 중)
 - task-01 통과 (반려 0회): 솔루션·프로젝트 4개·스모크 테스트·Windows CI·LICENSE 구성
 - task-02 통과 (반려 0회): Core 설정 모델(SPEC 7장)과 JSON 저장소, 깨진 파일 백업, 테스트 10개
+- task-03 통과 (반려 0회): Generic Host·DI·Serilog, 트레이 메뉴 골격, Mutex 단일 인스턴스(재실행 신호: 이름 있는 EventWaitHandle), Per-Monitor V2 매니페스트
 
 ## 수정 이력
