@@ -190,4 +190,85 @@ public static partial class NativeMethods
 
     [LibraryImport("dwmapi.dll")]
     public static partial int DwmGetWindowAttribute(IntPtr hwnd, int attribute, out RECT value, int size);
+
+    // ---- GDI screen capture ----
+    public const uint SRCCOPY = 0x00CC0020;
+    public const uint CAPTUREBLT = 0x40000000;
+    public const uint DIB_RGB_COLORS = 0;
+    public const uint DI_NORMAL = 0x0003;
+    public const uint CURSOR_SHOWING = 0x00000001;
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct BITMAPINFOHEADER
+    {
+        public uint biSize;
+        public int biWidth;
+        public int biHeight;
+        public ushort biPlanes;
+        public ushort biBitCount;
+        public uint biCompression;
+        public uint biSizeImage;
+        public int biXPelsPerMeter;
+        public int biYPelsPerMeter;
+        public uint biClrUsed;
+        public uint biClrImportant;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct CURSORINFO
+    {
+        public uint cbSize;
+        public uint flags;
+        public IntPtr hCursor;
+        public POINT ptScreenPos;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct ICONINFO
+    {
+        public int fIcon;
+        public uint xHotspot;
+        public uint yHotspot;
+        public IntPtr hbmMask;
+        public IntPtr hbmColor;
+    }
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    public static partial IntPtr GetDC(IntPtr hwnd);
+
+    [LibraryImport("user32.dll")]
+    public static partial int ReleaseDC(IntPtr hwnd, IntPtr hdc);
+
+    [LibraryImport("gdi32.dll", SetLastError = true)]
+    public static partial IntPtr CreateCompatibleDC(IntPtr hdc);
+
+    [LibraryImport("gdi32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool DeleteDC(IntPtr hdc);
+
+    [LibraryImport("gdi32.dll", SetLastError = true)]
+    public static partial IntPtr CreateDIBSection(IntPtr hdc, ref BITMAPINFOHEADER bmi, uint usage, out IntPtr bits, IntPtr section, uint offset);
+
+    [LibraryImport("gdi32.dll")]
+    public static partial IntPtr SelectObject(IntPtr hdc, IntPtr obj);
+
+    [LibraryImport("gdi32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool DeleteObject(IntPtr obj);
+
+    [LibraryImport("gdi32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool BitBlt(IntPtr hdcDest, int xDest, int yDest, int width, int height, IntPtr hdcSrc, int xSrc, int ySrc, uint rop);
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool GetCursorInfo(ref CURSORINFO info);
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool GetIconInfo(IntPtr icon, out ICONINFO info);
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool DrawIconEx(IntPtr hdc, int x, int y, IntPtr icon, int width, int height, uint step, IntPtr brush, uint flags);
 }
