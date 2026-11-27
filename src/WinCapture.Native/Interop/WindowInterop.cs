@@ -1,0 +1,32 @@
+using WinCapture.Core.Geometry;
+
+namespace WinCapture.Native.Interop;
+
+/// <summary>Thin helpers over <see cref="NativeMethods"/> returning Core types (physical pixels).</summary>
+public static class WindowInterop
+{
+    /// <summary>Returns false on failure; the Win32 error is available via Marshal.GetLastPInvokeError.</summary>
+    public static bool ExcludeFromCapture(IntPtr hwnd) =>
+        NativeMethods.SetWindowDisplayAffinity(hwnd, NativeMethods.WDA_EXCLUDEFROMCAPTURE);
+
+    public static void AddExtendedStyles(IntPtr hwnd, long styles)
+    {
+        long current = NativeMethods.GetWindowLongPtr(hwnd, NativeMethods.GWL_EXSTYLE);
+        NativeMethods.SetWindowLongPtr(hwnd, NativeMethods.GWL_EXSTYLE, (nint)(current | styles));
+    }
+
+    /// <summary>Moves/resizes in physical pixels, topmost, without activation.</summary>
+    public static bool SetBounds(IntPtr hwnd, Rect bounds) =>
+        NativeMethods.SetWindowPos(
+            hwnd, NativeMethods.HWND_TOPMOST, bounds.X, bounds.Y, bounds.Width, bounds.Height,
+            NativeMethods.SWP_NOACTIVATE | NativeMethods.SWP_NOOWNERZORDER);
+
+    /// <summary>Bounding rectangle of all monitors in virtual screen coordinates.</summary>
+    public static Rect GetVirtualScreen() => new(
+        NativeMethods.GetSystemMetrics(NativeMethods.SM_XVIRTUALSCREEN),
+        NativeMethods.GetSystemMetrics(NativeMethods.SM_YVIRTUALSCREEN),
+        NativeMethods.GetSystemMetrics(NativeMethods.SM_CXVIRTUALSCREEN),
+        NativeMethods.GetSystemMetrics(NativeMethods.SM_CYVIRTUALSCREEN));
+
+    public static uint GetDpi(IntPtr hwnd) => NativeMethods.GetDpiForWindow(hwnd);
+}

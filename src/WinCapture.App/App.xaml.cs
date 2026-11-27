@@ -6,6 +6,8 @@ using H.NotifyIcon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using WinCapture.App.Overlay;
+using WinCapture.Core.Geometry;
 using WinCapture.Core.Settings;
 
 namespace WinCapture.App;
@@ -62,12 +64,17 @@ public partial class App : Application
                             Log.Warning(ex, "{Message}", message);
                         }
                     }));
+                services.AddSingleton<RegionState>();
+                services.AddSingleton<BorderController>();
             })
             .Build();
         _host.Start();
 
         var settings = _host.Services.GetRequiredService<ISettingsStore>().Load();
         Log.Information("WinCapture started. Settings loaded (saveFolder set: {HasFolder})", !string.IsNullOrEmpty(settings.SaveFolder));
+
+        // Creating the controller wires RegionState to the border window (hotkeys connect in later tasks).
+        _host.Services.GetRequiredService<BorderController>();
 
         AppTheme.Initialize();
         CreateTrayIcon();
