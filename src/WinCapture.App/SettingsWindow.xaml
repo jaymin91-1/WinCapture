@@ -35,32 +35,32 @@
             <ui:NavigationView.MenuItems>
                 <ui:NavigationViewItem Content="일반" TargetPageType="{x:Type pages:GeneralPage}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Settings24" />
+                        <Viewbox Width="18" Height="18"><Path Style="{StaticResource NavIconPathStyle}" Data="{StaticResource Icon.General}" /></Viewbox>
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem Content="단축키" TargetPageType="{x:Type pages:HotkeysPage}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Keyboard24" />
+                        <Viewbox Width="18" Height="18"><Path Style="{StaticResource NavIconPathStyle}" Data="{StaticResource Icon.Hotkeys}" /></Viewbox>
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem Content="캡처" TargetPageType="{x:Type pages:CapturePage}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Screenshot24" />
+                        <Viewbox Width="18" Height="18"><Path Style="{StaticResource NavIconPathStyle}" Data="{StaticResource Icon.Capture}" /></Viewbox>
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem Content="녹화" TargetPageType="{x:Type pages:RecordingPage}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Video24" />
+                        <Viewbox Width="18" Height="18"><Path Style="{StaticResource NavIconPathStyle}" Data="{StaticResource Icon.Recording}" /></Viewbox>
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem Content="FFmpeg" TargetPageType="{x:Type pages:FfmpegPage}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Wrench24" />
+                        <Viewbox Width="18" Height="18"><Path Style="{StaticResource NavIconPathStyle}" Data="{StaticResource Icon.Ffmpeg}" /></Viewbox>
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem Content="정보" TargetPageType="{x:Type pages:AboutPage}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Info24" />
+                        <Viewbox Width="18" Height="18"><Path Style="{StaticResource NavIconPathStyle}" Data="{StaticResource Icon.About}" /></Viewbox>
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>

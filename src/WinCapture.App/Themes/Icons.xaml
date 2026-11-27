@@ -1,0 +1,24 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
+    <!-- Settings tab line icons. Geometry is copied from the mockup nav SVGs (24x24 coordinate space). -->
+    <Geometry x:Key="Icon.General">M9,12 A3,3 0 1 0 15,12 A3,3 0 1 0 9,12 Z M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1</Geometry>
+    <Geometry x:Key="Icon.Hotkeys">M4.5,6 L19.5,6 A2.5,2.5 0 0 1 22,8.5 L22,15.5 A2.5,2.5 0 0 1 19.5,18 L4.5,18 A2.5,2.5 0 0 1 2,15.5 L2,8.5 A2.5,2.5 0 0 1 4.5,6 Z M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10</Geometry>
+    <Geometry x:Key="Icon.Capture">M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3</Geometry>
+    <Geometry x:Key="Icon.Recording">M4.5,6 L13.5,6 A2.5,2.5 0 0 1 16,8.5 L16,15.5 A2.5,2.5 0 0 1 13.5,18 L4.5,18 A2.5,2.5 0 0 1 2,15.5 L2,8.5 A2.5,2.5 0 0 1 4.5,6 Z M16 10l6-3v10l-6-3</Geometry>
+    <Geometry x:Key="Icon.Ffmpeg">M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z</Geometry>
+    <Geometry x:Key="Icon.About">M3,12 A9,9 0 1 0 21,12 A9,9 0 1 0 3,12 Z M12 11v6M12 7.5h.01</Geometry>
+
+    <!-- Line icon: no fill, stroke follows the owning navigation item's Foreground (theme / selection aware). -->
+    <Style x:Key="NavIconPathStyle" TargetType="Path">
+        <Setter Property="Width" Value="24" />
+        <Setter Property="Height" Value="24" />
+        <Setter Property="Fill" Value="{x:Null}" />
+        <Setter Property="StrokeThickness" Value="1.6" />
+        <Setter Property="StrokeStartLineCap" Value="Round" />
+        <Setter Property="StrokeEndLineCap" Value="Round" />
+        <Setter Property="StrokeLineJoin" Value="Round" />
+        <Setter Property="Stroke"
+                Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ui:NavigationViewItem}}" />
+    </Style>
+</ResourceDictionary>

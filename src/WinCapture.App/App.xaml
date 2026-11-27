@@ -8,28 +8,21 @@
         <ResourceDictionary.MergedDictionaries>
             <ui:ThemesDictionary Theme="Light" />
             <ui:ControlsDictionary />
+            <ResourceDictionary Source="Themes/Icons.xaml" />
             <ResourceDictionary Source="Themes/Styles.xaml" />
         </ResourceDictionary.MergedDictionaries>
-        <!-- Neutral tray icon: a rounded frame with corner brackets and a dot. Original artwork. -->
+        <!-- Tray icon: accent blue rounded square with a white dot. Original artwork, same in light and dark. -->
         <DrawingImage x:Key="TrayIconImage">
             <DrawingImage.Drawing>
                 <DrawingGroup>
-                    <GeometryDrawing Brush="#FF2D3748">
+                    <GeometryDrawing Brush="#FF2F7CF6">
                         <GeometryDrawing.Geometry>
-                            <RectangleGeometry Rect="0,0,32,32" RadiusX="7" RadiusY="7" />
+                            <RectangleGeometry Rect="0,0,32,32" RadiusX="9" RadiusY="9" />
                         </GeometryDrawing.Geometry>
                     </GeometryDrawing>
-                    <GeometryDrawing Brush="#FFFF3B30">
+                    <GeometryDrawing Brush="#FFFFFFFF">
                         <GeometryDrawing.Geometry>
-                            <EllipseGeometry Center="16,16" RadiusX="4" RadiusY="4" />
-                        </GeometryDrawing.Geometry>
-                    </GeometryDrawing>
-                    <GeometryDrawing>
-                        <GeometryDrawing.Pen>
-                            <Pen Brush="#FFFFFFFF" Thickness="2.5" />
-                        </GeometryDrawing.Pen>
-                        <GeometryDrawing.Geometry>
-                            <PathGeometry Figures="M6,12 L6,6 L12,6 M20,6 L26,6 L26,12 M26,20 L26,26 L20,26 M12,26 L6,26 L6,20" />
+                            <EllipseGeometry Center="16,16" RadiusX="6" RadiusY="6" />
                         </GeometryDrawing.Geometry>
                     </GeometryDrawing>
                 </DrawingGroup>
