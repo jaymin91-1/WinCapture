@@ -74,7 +74,6 @@
 - 창 표시·숨김(메뉴, 단축키, 트레이)은 설정 창과 컨트롤 바를 함께 숨기고 다시 보인다. 트레이 아이콘과 테두리는 그대로 둔다.
 - 컨트롤 바를 닫으면(X) 앱은 종료되지 않고 숨겨진다. 종료는 트레이 "종료"로 한다.
 - 스타일은 3장 팔레트를 따른다.
-- 자동 숨김(`autoHideAppWindow`)은 컨트롤 바에도 적용한다.
 
 ### 단축키 팝업 (2026-11-27 사용자 요청, 목업: `docs/design/mockup/hotkey-popup-light.png`)
 - 컨트롤 바 메뉴 [단축키]로 여는 작은 창(약 400 DIP 폭, 리사이즈 없음, 컨트롤 바 위에 뜸).
@@ -171,9 +170,9 @@
 
 ### F-08 앱 창 숨김/표시 (필수)
 - 완료 기준
-  1. [자동] 겹침 판정: 창 (0, 0, 500, 500)과 영역 (400, 400, 200, 200)은 겹친다. 창 (0, 0, 300, 300)과 영역 (400, 400, 200, 200)은 겹치지 않는다. 변이 맞닿기만 하는 경우(창 (0, 0, 400, 400))는 겹치지 않는다.
-  2. [수동] ToggleAppWindow 단축키와 트레이 "창 표시/숨김"으로 설정 창이 숨겨지고 다시 나타난다. 트레이 아이콘과 테두리는 그대로 있다.
-  3. [수동] "캡처/녹화 시작 시 앱 창 자동 숨김"이 켜져 있으면, 설정 창이 영역과 겹친 상태에서 스크린샷을 찍어도 설정 창이 결과물에 나오지 않는다.
+- (2026-11-27 사용자 지시) **앱 창 자동 숨김은 하지 않는다.** 메인 창(컨트롤 바)·설정 창이 보이는 상태로 캡처하면 결과물에 그대로 나온다. 숨기고 싶으면 사용자가 ToggleAppWindow 단축키(기본 Ctrl+Alt+W)·트레이·메뉴로 직접 숨긴다. 이에 따라 기존 기준 1(겹침 판정)과 3(자동 숨김)은 삭제했고, 관련 코드·테스트는 제거·교체할 수 있다(교체 목록을 보고서에 남긴다).
+  2. [수동] ToggleAppWindow 단축키와 트레이 "창 표시/숨김"으로 설정 창과 메인 창이 숨겨지고 다시 나타난다. 트레이 아이콘과 테두리는 그대로 있다.
+  4. [수동] 메인 창이 캡처 영역 안에 보이는 상태로 스크린샷을 찍으면 메인 창이 결과물에 나온다. 숨긴 상태로 찍으면 나오지 않는다.
 
 ### F-09 스크린샷 (필수)
 - 완료 기준
@@ -244,8 +243,6 @@
   "hotkeys": { "SelectRegion": "Ctrl+Alt+R", "Screenshot": "Ctrl+Alt+S", "RecordVideo": "Ctrl+Alt+V", "RecordGif": "Ctrl+Alt+G", "ToggleBorder": "Ctrl+Alt+H", "ClearRegion": "Ctrl+Alt+X", "ToggleAppWindow": "Ctrl+Alt+W" },
   "border": { "color": "#FF3B30", "thickness": 2 },
   "capture": { "includeCursor": true, "copyToClipboard": false },
-  "autoHideAppWindow": true,
-  "reshowAppWindowAfterRecording": false,
   "recording": { "fps": 30, "preset": "Standard", "maxDurationSeconds": 0 },
   "gif": { "fps": 12, "maxWidth": 800 },
   "ffmpegPath": "",
@@ -255,6 +252,7 @@
 }
 ```
 - 새 키를 추가할 때는 기존 파일을 지우지 않고 없는 키만 기본값으로 채운다.
+- `autoHideAppWindow`, `reshowAppWindowAfterRecording`도 2026-11-27 사용자 지시로 삭제했다(자동 숨김 없음). 기존 파일에 남아 있으면 무시한다.
 - `restoreLastRegion`, `lastRegion`은 2026-11-27 사용자 지시로 삭제했다. 기존 파일에 남아 있으면 무시한다(F-02-3).
 
 ## 8. 하지 않을 것
