@@ -19,6 +19,7 @@
 - task-04 통과 (반려 0회): Native LibraryImport 래퍼, OverlayWindowBase(캡처 제외·창 스타일 단일 지점), BorderWindow(영역 바깥 테두리·그립, 내부 HTTRANSPARENT)
 - task-05 통과 (반려 0회): SelectionOverlayWindow(딤·크기 라벨·Esc 취소), RegionCoordinator(선택 적용·복원·ClearRegion), 트레이 '영역 지정' 연결. 선택 오버레이만 NOACTIVATE 예외(allowActivation, 캡처 제외 유지)
 - task-06 통과 (반려 0회): 테두리 띠 드래그 이동·그립 리사이즈(시작점 기준 델타), 8px 띠는 창 확장+알파 1 칠, DragTooltipWindow, 녹화 중 잠금 안내, 드래그 종료 시 저장
+- task-07 통과 (반려 0회): HotkeyService(RegisterHotKey, Reapply, 실패 시 풍선·Statuses), 영역 지정/테두리 토글/영역 해제/앱 창 토글 연결, 트레이 '창 표시/숨김' 활성화, 내부 충돌 단축키는 둘 다 제외
 - 주요 결정: ClearRegion은 저장된 lastRegion도 비운다 (사용자 결정 A, 2026-11-27)
 
 ## 수정 이력
