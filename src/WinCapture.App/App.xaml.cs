@@ -69,6 +69,7 @@ public partial class App : Application
         var settings = _host.Services.GetRequiredService<ISettingsStore>().Load();
         Log.Information("WinCapture started. Settings loaded (saveFolder set: {HasFolder})", !string.IsNullOrEmpty(settings.SaveFolder));
 
+        AppTheme.Initialize();
         CreateTrayIcon();
         _guard.StartListening(() => Dispatcher.BeginInvoke(ShowSettingsWindow));
     }
@@ -103,21 +104,24 @@ public partial class App : Application
 
     private void CreateTrayIcon()
     {
-        var menu = new ContextMenu();
+        var menu = new ContextMenu { Style = (Style)FindResource("TrayContextMenuStyle") };
 
-        // Order follows SPEC section 4. Unimplemented items are disabled placeholders.
-        menu.Items.Add(new MenuItem { Header = "영역 지정", IsEnabled = false });
-        menu.Items.Add(new MenuItem { Header = "스크린샷", IsEnabled = false });
-        menu.Items.Add(new MenuItem { Header = "동영상 녹화 시작/정지", IsEnabled = false });
-        menu.Items.Add(new MenuItem { Header = "GIF 녹화 시작/정지", IsEnabled = false });
-        menu.Items.Add(new MenuItem { Header = "창 표시/숨김", IsEnabled = false });
-        menu.Items.Add(new MenuItem { Header = "저장 폴더 열기", IsEnabled = false });
+        // Order follows SPEC section 4; shortcut text shows SPEC section 7 defaults.
+        // Unimplemented items are disabled placeholders.
+        menu.Items.Add(CreateMenuItem("영역 지정", "Ctrl+Alt+R", enabled: false));
+        menu.Items.Add(CreateMenuItem("스크린샷", "Ctrl+Alt+S", enabled: false));
+        menu.Items.Add(CreateMenuItem("동영상 녹화 시작/정지", "Ctrl+Alt+V", enabled: false));
+        menu.Items.Add(CreateMenuItem("GIF 녹화 시작/정지", "Ctrl+Alt+G", enabled: false));
+        menu.Items.Add(CreateSeparator());
+        menu.Items.Add(CreateMenuItem("창 표시/숨김", "Ctrl+Alt+W", enabled: false));
+        menu.Items.Add(CreateMenuItem("저장 폴더 열기", null, enabled: false));
+        menu.Items.Add(CreateSeparator());
 
-        var settingsItem = new MenuItem { Header = "설정" };
+        var settingsItem = CreateMenuItem("설정", null, enabled: true);
         settingsItem.Click += (_, _) => ShowSettingsWindow();
         menu.Items.Add(settingsItem);
 
-        var exitItem = new MenuItem { Header = "종료" };
+        var exitItem = CreateMenuItem("종료", null, enabled: true);
         exitItem.Click += (_, _) => ExitApplication();
         menu.Items.Add(exitItem);
 
@@ -130,6 +134,16 @@ public partial class App : Application
         };
         _trayIcon.ForceCreate();
     }
+
+    private MenuItem CreateMenuItem(string header, string? shortcut, bool enabled) => new()
+    {
+        Header = header,
+        InputGestureText = shortcut,
+        IsEnabled = enabled,
+        Style = (Style)FindResource("TrayMenuItemStyle"),
+    };
+
+    private Separator CreateSeparator() => new() { Style = (Style)FindResource("TrayMenuSeparatorStyle") };
 
     // Single path for showing the settings window (tray menu and second-instance signal).
     private void ShowSettingsWindow()

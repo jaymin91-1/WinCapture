@@ -8,6 +8,7 @@
         <ResourceDictionary.MergedDictionaries>
             <ui:ThemesDictionary Theme="Light" />
             <ui:ControlsDictionary />
+            <ResourceDictionary Source="Themes/Styles.xaml" />
         </ResourceDictionary.MergedDictionaries>
         <!-- Neutral tray icon: a rounded frame with corner brackets and a dot. Original artwork. -->
         <DrawingImage x:Key="TrayIconImage">

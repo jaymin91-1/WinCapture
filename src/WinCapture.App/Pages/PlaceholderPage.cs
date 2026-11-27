@@ -13,15 +13,23 @@ public abstract class PlaceholderPage : Page
             Margin = new Thickness(32, 24, 32, 24),
             Children =
             {
-                new TextBlock { Text = title, FontSize = 24, FontWeight = FontWeights.SemiBold },
+                CreateTitle(title),
                 new TextBlock
                 {
                     Text = "이 탭의 설정은 이후 버전에서 제공됩니다.",
                     Margin = new Thickness(0, 12, 0, 0),
-                    Opacity = 0.7,
                 },
             },
         };
+        this.SetResourceReference(BackgroundProperty, "WindowBackgroundBrush");
+        ((TextBlock)((StackPanel)Content).Children[1]).SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
+    }
+
+    private static TextBlock CreateTitle(string title)
+    {
+        var block = new TextBlock { Text = title };
+        block.SetResourceReference(FrameworkElement.StyleProperty, "PageTitleStyle");
+        return block;
     }
 }
 

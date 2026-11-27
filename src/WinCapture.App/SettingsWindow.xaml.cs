@@ -13,7 +13,8 @@ public partial class SettingsWindow : FluentWindow
     public SettingsWindow()
     {
         // Follow the system light/dark theme, including live changes.
-        SystemThemeWatcher.Watch(this);
+        // Solid background (no Mica) and the app's own accent: WPF-UI accent updates are disabled.
+        SystemThemeWatcher.Watch(this, WindowBackdropType.None, updateAccents: false);
         InitializeComponent();
     }
 
@@ -35,7 +36,6 @@ public partial class SettingsWindow : FluentWindow
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        ApplicationThemeManager.ApplySystemTheme();
         RootNavigation.Navigate(typeof(GeneralPage));
     }
 }
